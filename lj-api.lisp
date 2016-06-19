@@ -1,8 +1,7 @@
-
 (in-package #:lj-api)
 
-(defparameter *user* "can3p_test")
-(defparameter *password* "skqxcThNfEVFb8")
+(defparameter *user* "")
+(defparameter *password* "")
 
 (defun hash (str)
   (string-downcase (format nil "~{~2,'0x~}"
@@ -59,5 +58,6 @@
                             :host "www.livejournal.com")))
 
 
-(defun create-post (topic)
-  topic)
+(defun create-post (plist)
+  (postevent (getf plist :body)
+             (or (getf plist :title) "")))

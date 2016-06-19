@@ -2,7 +2,5 @@
 
 (in-package #:cl-journal)
 
-(defun hello () (create-post "bla"))
-
-;;; "cl-journal" goes here. Hacks and glory await!
-
+(defun create-post-from-file (filename)
+  (create-post (parse-post-file filename)))
