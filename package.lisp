@@ -10,5 +10,6 @@
   (:export :create-post))
 
 (defpackage #:cl-journal
-  (:use #:cl #:lj-api #:file-api))
+  (:use #:cl #:lj-api #:file-api)
+  (:export :create-post-from-file))
 

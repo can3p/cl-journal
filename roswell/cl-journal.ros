@@ -1,0 +1,15 @@
+#!/bin/sh
+#|-*- mode:lisp -*-|#
+#| <Put a one-line description here>
+exec ros -Q -- $0 "$@"
+|#
+(ql:quickload :cl-journal)
+
+(defpackage :ros.script.cl-journal.3675449222
+  (:use :cl :cl-journal))
+(in-package :ros.script.cl-journal.3675449222)
+
+(defun main (fname &rest argv)
+  (declare (ignore argv))
+  (create-post-from-file fname))
+;;; vim: set ft=lisp lisp:
