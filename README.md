@@ -13,9 +13,10 @@ At the moment only post creation is rudimentary supported.
 - fire `cl-journal init` and follow instructions
 - Write posts in the following format:
 
-    title: Name of your post
-    
-    Some body with *markdown* support
-    
+```
+title: Name of your post
+
+Some body with *markdown* support
+```
     
 - Publish with `cl-journal filename.md`
