@@ -1,7 +1,7 @@
 (in-package #:lj-api)
 
-(defparameter *user* "")
-(defparameter *password* "")
+(defvar *livejournal-login* nil)
+(defvar *livejournal-password* nil)
 
 (defun hash (str)
   (string-downcase (format nil "~{~2,'0x~}"
@@ -20,10 +20,10 @@
   (let* ((challenge (getchallenge))
          (auth-response (hash (concatenate 'string
                                            challenge
-                                           (hash *password*)))))
+                                           (hash *livejournal-password*)))))
     (concatenate 'list
                  req
-                 (list "username" *user*
+                 (list "username" *livejournal-login*
                        "auth_method" "challenge"
                        "auth_challenge" challenge
                        "auth_response" auth-response))))

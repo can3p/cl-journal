@@ -3,13 +3,24 @@
 #| <Put a one-line description here>
 exec ros -Q -- $0 "$@"
 |#
-(ql:quickload :cl-journal)
+(ql:quickload '(:cl-journal) :silent t)
 
 (defpackage :ros.script.cl-journal.3675449222
-  (:use :cl :cl-journal))
+  (:use :cl :cl-journal :client :lj-api))
+
 (in-package :ros.script.cl-journal.3675449222)
 
 (defun main (fname &rest argv)
   (declare (ignore argv))
-  (create-post-from-file fname))
+  (if (equal fname "init")
+      (setup)
+      (let* ((*livejournal-login* (get-login))
+             (*livejournal-password* (get-password *livejournal-login*)))
+        (if (or (equal "" *livejournal-login*)
+                (equal "" *livejournal-password*)
+                )
+            (format t "Setup is not complete! Run cl-journal init from this folder")
+            (create-post-from-file fname)
+            ))))
+
 ;;; vim: set ft=lisp lisp:

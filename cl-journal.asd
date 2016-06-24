@@ -7,9 +7,11 @@
   :serial t
   :depends-on (#:s-xml-rpc
                #:md5
+               #:uiop
                #:cl-markdown)
   :components ((:file "package")
                (:file "file-api")
+               (:file "client")
                (:file "lj-api")
                (:file "cl-journal")
                ))
