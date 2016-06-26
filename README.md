@@ -59,6 +59,7 @@ This list is not structured in a particular order
 * cross-links between posts using filenames
 * photo upload functionality
 * git-hooks support
+* lj-user links support
 
 ## License
 
