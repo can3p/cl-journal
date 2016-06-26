@@ -60,6 +60,7 @@ This list is not structured in a particular order
 * photo upload functionality
 * git-hooks support
 * lj-user links support
+* passwords with special characters are not save completely (e.g. parts after $ inclusive are not saved)
 
 ## License
 
