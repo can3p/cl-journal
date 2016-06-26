@@ -45,6 +45,8 @@ the file until you remove it.
 
 ## TODO or not supported yet
 
+This list is not structured in a particular order
+
 * Update posts from the repo
 * Tags, music etc.
 * Post restictions
@@ -56,6 +58,7 @@ the file until you remove it.
 * post deletion
 * cross-links between posts using filenames
 * photo upload functionality
+* git-hooks support
 
 ## License
 
