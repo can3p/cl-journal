@@ -10,17 +10,43 @@ exec ros -Q -- $0 "$@"
 
 (in-package :ros.script.cl-journal.3675449222)
 
-(defun main (fname &rest argv)
-  (declare (ignore argv))
-  (if (equal fname "init")
-      (setup)
-      (let* ((*livejournal-login* (get-login))
-             (*livejournal-password* (get-password *livejournal-login*)))
-        (if (or (equal "" *livejournal-login*)
-                (equal "" *livejournal-password*)
-                )
-            (format t "Setup is not complete! Run cl-journal init from this folder")
-            (create-post-from-file fname)
-            ))))
+(defun help ()
+  (format t "~&Usage:
+Livejournal client written in Common Lisp. Please run all commands in
+a top level directory of your git repo. Right now client is supposed
+to work on Mac OS X only.
+
+Usage:
+cl-journal.ros [command]
+
+Commands:
+    init
+        Setup up a directory. Setup will ask for login name and password.
+        Password will be stored in a default Mac OS X keychain.
+
+    sync
+        Find new posts and publish them. Drafts will be skipped client
+        will prompt before publishing every file.
+"))
+
+(defun main (&optional (command "help"))
+  (if (top-git-dir-p)
+      (cond
+        ((equal command "init") (setup))
+        ((equal command "sync") (let* ((*livejournal-login* (get-login))
+                                      (*livejournal-password* (get-password *livejournal-login*)))
+                                 (if (or (equal "" *livejournal-login*)
+                                         (equal "" *livejournal-password*)
+                                         )
+                                     (format t "Setup is not complete! Run cl-journal init from this folder")
+                                     (progn
+                                       (restore-posts)
+                                       (publish-new-files))
+                                     )))
+        (t (help)))
+      (progn
+        (format t "Please run this command from top level directory in the git repo~%~%")
+        (help)
+        )))
 
 ;;; vim: set ft=lisp lisp:
