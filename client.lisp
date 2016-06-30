@@ -1,5 +1,10 @@
 (in-package #:client)
 
+(defvar *pre-commit-hook* (format nil "~&#!/usr/bin/env bash
+cl-journal sync
+git add posts.lisp
+"))
+
 (defun prompt-read (x)
   (format *query-io* "~a: " x)
   (force-output *query-io*)
@@ -48,7 +53,17 @@
           login
           ))))
 
+(defun setup-hook ()
+  (if (y-or-n-p "Do you want to set up pre-commit hook to make posting easier?")
+    (with-open-file (out ".git/hooks/pre-commit"
+                         :direction :output
+                         :if-exists :supersede)
+      (with-standard-io-syntax
+        (format out *pre-commit-hook*)
+        (run-program "chmod +x .git/hooks/pre-commit")))))
+
 (defun setup ()
   (let ((login (set-login)))
     (set-password login)
+    (setup-hook)
     ))

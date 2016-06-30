@@ -52,13 +52,11 @@ This list is not structured in a particular order
 * Post restictions
 * reposts
 * deleting posts
-* opening post in browser
 * preview
 * backwards sync to get updates from the livejournal.com
 * post deletion
 * cross-links between posts using filenames
 * photo upload functionality
-* git-hooks support
 * lj-user links support
 * passwords with special characters are not save completely (e.g. parts after $ inclusive are not saved)
 
