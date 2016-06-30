@@ -29,7 +29,7 @@ Commands:
         will prompt before publishing every file.
 "))
 
-(defun main (&optional (command "help"))
+(defun main (&optional (command "help") (arg ()))
   (if (top-git-dir-p)
       (cond
         ((equal command "init") (setup))
@@ -43,6 +43,14 @@ Commands:
                                        (restore-posts)
                                        (publish-new-files))
                                      )))
+        ((equal command "url") (if arg
+                                   (progn
+                                     (restore-posts)
+                                     (let ((url (lookup-file-url arg)))
+                                       (if url
+                                           (format t "~a~%" url)
+                                           (format t "File is not published~%"))))
+                                   (format t "Please specify filename to lookup~%")))
         (t (help)))
       (progn
         (format t "Please run this command from top level directory in the git repo~%~%")

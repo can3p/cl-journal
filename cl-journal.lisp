@@ -45,6 +45,11 @@
     (save-posts)
     post))
 
+(defun lookup-file-url (fname)
+  (let ((obj (file-published-p fname)))
+    (if obj
+    (getf (car obj) :url))))
+
 (defun publish-new-files ()
   (let ((new (get-new-files)))
     (if (> (length new) 0)

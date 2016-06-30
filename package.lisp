@@ -16,5 +16,5 @@
 (defpackage #:cl-journal
   (:use #:cl #:lj-api #:file-api #:s-xml-rpc)
   (:import-from #:uiop/os :getcwd)
-  (:export :create-post-from-file :top-git-dir-p :publish-new-files :restore-posts))
+  (:export :create-post-from-file :top-git-dir-p :publish-new-files :restore-posts :lookup-file-url))
 
