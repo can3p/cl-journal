@@ -6,7 +6,7 @@ exec ros -Q -- $0 "$@"
 (ql:quickload '(:cl-journal) :silent t)
 
 (defpackage :ros.script.cl-journal.3675449222
-  (:use :cl :cl-journal :client :lj-api))
+  (:use :cl :cl-journal :client :lj-api :uiop/run-program))
 
 (in-package :ros.script.cl-journal.3675449222)
 
@@ -51,6 +51,7 @@ Commands:
                                            (format t "~a~%" url)
                                            (format t "File is not published~%"))))
                                    (format t "Please specify filename to lookup~%")))
+        ((equal command "build") (run-program "ros build ~/.roswell/bin/cl-journal.ros"))
         (t (help)))
       (progn
         (format t "Please run this command from top level directory in the git repo~%~%")
