@@ -40,6 +40,13 @@
                        "hour" hour
                        "min" minute))))
 
+(defun add-mask (req)
+  (if (find "usemask" req :test #'equal)
+      (concatenate 'list
+                   req
+                   (list "allowmask" 1))
+      req))
+
 
 (defun login ()
   (let* ((struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge)))
@@ -48,16 +55,27 @@
                             :url "/interface/xmlrpc"
                             :host "www.livejournal.com")))
 
-(defun postevent (event subject)
+(defun postevent (event subject privacy)
   (let* ((params (list "event" event
-                       "subject" subject))
-         (struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge (add-date params))))
+                       "subject" subject
+                       "security" privacy))
+         (struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge (add-mask (add-date params)))))
          (request (s-xml-rpc:encode-xml-rpc-call "LJ.XMLRPC.postevent" struct)))
     (s-xml-rpc:xml-rpc-call request
                             :url "/interface/xmlrpc"
                             :host "www.livejournal.com")))
 
+(defun get-privacy-setting (plist)
+  (let ((privacy (or (getf plist :privacy) "public")))
+    (cond
+      ((string= privacy "public") "public")
+      ((string= privacy "friends") "usemask")
+      ((string= privacy "private") "private")
+      (t "public")
+      )))
+
 
 (defun create-post (plist)
   (postevent (getf plist :body)
-             (or (getf plist :title) "")))
+             (or (getf plist :title) "")
+             (get-privacy-setting plist)))

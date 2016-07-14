@@ -32,10 +32,12 @@ and I'm not ready to provide any better way. Contributions are welcome!
 
 ```
 title: Name of your post
+privacy: friends
 
 Some body with *markdown* support
 ```
     
+- Privacy field is public by default. If specified can contain private, friends and public vlues
 - Publish with `cl-journal sync`
 
 If you want to keep file in drafts for a while you can either
@@ -49,7 +51,6 @@ This list is not structured in a particular order
 
 * Update posts from the repo
 * Tags, music etc.
-* Post restictions
 * reposts
 * deleting posts
 * preview

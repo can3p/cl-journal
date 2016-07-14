@@ -17,6 +17,13 @@ git add posts.lisp
     password
     ))
 
+(defun setup-env ()
+  (uiop/os::chdir #P"/Users/dpetrov/test-drafts/")
+  (setf *default-pathname-defaults* #P"/Users/dpetrov/test-drafts/")
+  (setf lj-api::*livejournal-login* (get-login))
+  (setf lj-api::*livejournal-password* (get-password lj-api::*livejournal-login*))
+  )
+
 (defun get-login ()
   (let ((login (run-program "git config livejournal.login"
                :ignore-error-status t
