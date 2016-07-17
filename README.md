@@ -50,7 +50,6 @@ the file until you remove it.
 This list is not structured in a particular order
 
 * Update posts from the repo
-* Tags, music etc.
 * reposts
 * deleting posts
 * preview

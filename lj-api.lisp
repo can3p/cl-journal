@@ -55,10 +55,21 @@
                             :url "/interface/xmlrpc"
                             :host "www.livejournal.com")))
 
-(defun postevent (event subject privacy)
-  (let* ((params (list "event" event
-                       "subject" subject
-                       "security" privacy))
+(defun add-props (plist)
+  (let* ((file-fields (list :music :mood :location :tags))
+         (lj-fields (list "current_music" "current_mood" "current_location" "taglist"))
+         (props (mapcar #'(lambda (field lj-field)
+                            (if (getf plist field)
+                                (list lj-field (getf plist field)) ()))
+                        file-fields lj-fields)))
+    (apply #'s-xml-rpc:xml-rpc-struct
+           (apply #'concatenate 'list props))))
+
+(defun postevent (plist)
+  (let* ((params (list "event" (getf plist :body)
+                       "subject" (or (getf plist :title) "")
+                       "security" (get-privacy-setting plist)
+                       "props" (add-props plist)))
          (struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge (add-mask (add-date params)))))
          (request (s-xml-rpc:encode-xml-rpc-call "LJ.XMLRPC.postevent" struct)))
     (s-xml-rpc:xml-rpc-call request
@@ -76,6 +87,4 @@
 
 
 (defun create-post (plist)
-  (postevent (getf plist :body)
-             (or (getf plist :title) "")
-             (get-privacy-setting plist)))
+  (postevent plist))
