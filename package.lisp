@@ -14,7 +14,7 @@
   (:export :parse-post-answer :create-post :*livejournal-login* :*livejournal-password*))
 
 (defpackage #:cl-journal
-  (:use #:cl #:lj-api #:file-api #:s-xml-rpc)
+  (:use #:cl #:lj-api #:file-api #:s-xml-rpc #:cl-markdown)
   (:import-from #:uiop/os :getcwd)
-  (:export :create-post-from-file :top-git-dir-p :publish-new-files :restore-posts :lookup-file-url))
+  (:export #:*posts* :create-post-from-file :top-git-dir-p :publish-new-files :restore-posts :lookup-file-url))
 

@@ -1,5 +1,16 @@
 ;;;; cl-journal.lisp
 
+(in-package #:cl-markdown)
+
+(defmethod render-span-to-html :before
+    ((code (eql 'inline-link)) body encoding-method)
+  (let ((record (find-if #'(lambda (x) (equal (getf x :filename)
+                                              (cadr body)))
+                         cl-journal::*posts*
+                         )))
+    (if record
+        (setf (cadr body) (getf record :url)))))
+
 (in-package #:cl-journal)
 
 (defvar *posts* nil)

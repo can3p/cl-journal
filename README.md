@@ -11,6 +11,12 @@ At the moment only post creation is rudimentary supported.
 
 Due to password storage only Mac OS X is supported at the moment.
 
+## Features
+
+* Create posts as simple markdown files
+* Privacy, Tags, Music, Location and Mood fields are supported
+* Links to files in the repo resolve to links to relevant posts in the blog
+
 ## Install
 
 Install is a bit tricky, especially if you're not used to common lisp environment
@@ -55,7 +61,6 @@ This list is not structured in a particular order
 * preview
 * backwards sync to get updates from the livejournal.com
 * post deletion
-* cross-links between posts using filenames
 * photo upload functionality
 * lj-user links support
 * passwords with special characters are not save completely (e.g. parts after $ inclusive are not saved)
