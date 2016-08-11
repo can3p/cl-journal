@@ -35,12 +35,13 @@ and I'm not ready to provide any better way. Contributions are welcome!
 - setup local git repo for your posts and navigate there
 - fire `cl-journal init` and follow instructions
 - Write posts in the following format:
+- Refer lj users from markup with little effort
 
 ```
 title: Name of your post
 privacy: friends
 
-Some body with *markdown* support
+Some body with *markdown* support, link to {lj-user livejournal}
 ```
     
 - Privacy field is public by default. If specified can contain private, friends and public vlues
@@ -62,7 +63,6 @@ This list is not structured in a particular order
 * backwards sync to get updates from the livejournal.com
 * post deletion
 * photo upload functionality
-* lj-user links support
 * passwords with special characters are not save completely (e.g. parts after $ inclusive are not saved)
 
 ## License
