@@ -14,7 +14,7 @@ git add posts.lisp
   (format *query-io* "~a: " x)
   (force-output *query-io*)
   (let ((password (run-program "read -s val; echo $val" :output :string :input :interactive)))
-    password
+    (string-trim '(#\Newline #\Space) password)
     ))
 
 (defun setup-env ()
@@ -54,7 +54,7 @@ git add posts.lisp
       (format t "Password is already set!~%")
       (progn
         (let ((password (prompt-read-password "Password")))
-          (run-program (format nil "security add-internet-password -a ~a -s www.livejournal.com -w ~a" login password)
+          (run-program (format nil "security add-internet-password -a ~a -s www.livejournal.com -w '~A'" login password)
                        :ignore-error-status t
                        :output :string)
           login

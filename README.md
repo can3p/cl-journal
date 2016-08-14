@@ -63,7 +63,6 @@ This list is not structured in a particular order
 * backwards sync to get updates from the livejournal.com
 * post deletion
 * photo upload functionality
-* passwords with special characters are not save completely (e.g. parts after $ inclusive are not saved)
 
 ## License
 
