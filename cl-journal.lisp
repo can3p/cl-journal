@@ -46,6 +46,13 @@
 (defun file-draft-p (parsed-file)
   (getf parsed-file :draft))
 
+(defun file-modified-p (file)
+  (if file
+      (and
+       (probe-file (getf file :filename))
+       (< (or (getf file :updated-at) (getf file :created-at))
+          (file-write-date (getf file :filename))))))
+
 (defun top-git-dir-p ()
   (probe-file ".git"))
 
@@ -59,6 +66,13 @@
                          (decorate-with-context
                           (parse-post-file x) x (get-universal-time)))
                      (remove-if #'file-published-p (get-markdown-files)))))
+
+(defun get-modified-files ()
+  (remove-if-not #'file-modified-p *posts*))
+
+(defun get-deleted-files ()
+  (remove-if #'(lambda (post) (probe-file (getf post :filename)))
+             *posts*))
 
 (defun publish-post-from-object (post-object)
   (let ((post (create-post-from-object post-object)))
@@ -86,6 +100,36 @@
                   (publish-post-from-object post)))))
         (format t "No new files to publish~%"))))
 
+(defun publish-modified-files ()
+  (let ((modified (get-modified-files)))
+    (if (> (length modified) 0)
+        (progn
+          (if (> (length modified) 1)
+              (format t "There are ~a modified files to update~%" (length modified))
+              (format t "There a modified file to update~%"))
+          (loop for post in modified do
+            (let ((prompt (format nil "Filename: ~a~%Title: ~a~%~%Upload updated version of this file?"
+                                  (getf post :filename)
+                                  (getf (parse-post-file (getf post :filename)) :title))))
+              (if (y-or-n-p prompt)
+                  (update-post-from-object-and-update-db post)))))
+        (format t "No published files were modified~%"))))
+
+(defun unpublish-deleted-files ()
+  (let ((modified (get-deleted-files)))
+    (if (> (length modified) 0)
+        (progn
+          (if (> (length modified) 1)
+              (format t "There are ~a deleted files to unpublish~%" (length modified))
+              (format t "There a deleted file to unpublish~%"))
+          (loop for post in modified do
+            (let ((prompt (format nil "Filename: ~a~%Url: ~a~%~%Unpublish this file?"
+                                  (getf post :filename)
+                                  (getf post :url))))
+              (if (y-or-n-p prompt)
+                  (unpublish-post-from-object-and-update-db post)))))
+        (format t "No published files were deleted~%"))))
+
 (defun create-post-from-object (post-object)
   (let ((ts (get-universal-time))
         (filename (getf post-object :filename))
@@ -102,6 +146,43 @@
      (process-post-struct post)
      filename
      ts)))
+
+(defun update-post-from-object-and-update-db (post)
+  (let ((new-post (update-post-from-object post)))
+    (setf *posts* (remove-if #'(lambda (old-post) (equal (getf old-post :itemid)
+                                                         (getf new-post :itemid))) *posts*))
+    (push new-post *posts*)
+    (save-posts)))
+
+(defun unpublish-post-from-object-and-update-db (post)
+  (delete-post post)
+  (setf *posts* (remove-if #'(lambda (old-post)
+                               (equal (getf old-post :itemid)
+                                      (getf post :itemid))) *posts*))
+  (save-posts))
+
+(defun update-post-from-object (post)
+  (let* ((ts (get-universal-time))
+         (post-object (concatenate 'list
+                                   (parse-post-file (getf post :filename))
+                                   (get-date-struct (getf post :created-at))
+                                   post)))
+    (update-post post-object)
+    (setf (getf post :updated-at) ts)
+    post))
+
+(defun update-post-from-file (filename)
+  (let* ((ts (get-universal-time))
+         (post (copy-list (car (remove-if-not
+                    #'(lambda (x) (equal (getf x :filename) filename))
+                    *posts*))))
+         (post-object (concatenate 'list
+                                   (parse-post-file filename)
+                                   (get-date-struct (getf post :created-at))
+                                   post)))
+    (update-post post-object)
+    (setf (getf post :updated-at) ts)
+    post))
 
 (defun add-props (plist name val &rest fields)
   (setf (getf plist name) val)
@@ -123,4 +204,4 @@
 (defun decorate-with-context (struct filename timestamp)
   (add-props struct
              :filename filename
-             :last-change timestamp))
+             :created-at timestamp))

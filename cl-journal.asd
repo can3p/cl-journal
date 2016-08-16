@@ -10,6 +10,7 @@
                #:uiop
                #:cl-markdown)
   :components ((:file "package")
+               (:file "functions")
                (:file "file-api")
                (:file "client")
                (:file "lj-api")

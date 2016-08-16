@@ -16,6 +16,7 @@ Due to password storage only Mac OS X is supported at the moment.
 * Create posts as simple markdown files
 * Privacy, Tags, Music, Location and Mood fields are supported
 * Links to files in the repo resolve to links to relevant posts in the blog
+* Update/removal of posts is supported when relevant file is modified/removed
 
 ## Install
 
@@ -56,9 +57,7 @@ the file until you remove it.
 
 This list is not structured in a particular order
 
-* Update posts from the repo
 * reposts
-* deleting posts
 * preview
 * backwards sync to get updates from the livejournal.com
 * post deletion

@@ -41,7 +41,10 @@ Commands:
                                      (format t "Setup is not complete! Run cl-journal init from this folder")
                                      (progn
                                        (restore-posts)
-                                       (publish-new-files))
+                                       (publish-new-files)
+                                       (publish-modified-files)
+                                       (unpublish-deleted-files)
+                                       )
                                      )))
         ((equal command "url") (if arg
                                    (progn

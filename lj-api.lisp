@@ -76,6 +76,23 @@
                             :url "/interface/xmlrpc"
                             :host "www.livejournal.com")))
 
+(defun editevent (plist)
+  (let* ((params (list "event" (getf plist :body)
+                       "subject" (or (getf plist :title) "")
+                       "security" (get-privacy-setting plist)
+                       "itemid" (getf plist :itemid)
+                       "year" (getf plist :year)
+                       "mon" (getf plist :mon)
+                       "day" (getf plist :day)
+                       "hour" (getf plist :hour)
+                       "min" (getf plist :min)
+                       "props" (add-props plist)))
+         (struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge (add-mask params))))
+         (request (s-xml-rpc:encode-xml-rpc-call "LJ.XMLRPC.editevent" struct)))
+    (s-xml-rpc:xml-rpc-call request
+                            :url "/interface/xmlrpc"
+                            :host "www.livejournal.com")))
+
 (defun get-privacy-setting (plist)
   (let ((privacy (or (getf plist :privacy) "public")))
     (cond
@@ -88,3 +105,12 @@
 
 (defun create-post (plist)
   (postevent plist))
+
+(defun update-post (plist)
+  (editevent plist))
+
+(defun delete-post (plist)
+  (editevent (concatenate 'list
+                          (get-date-struct)
+                          (list :body ""
+                                :itemid (getf plist :itemid)))))
