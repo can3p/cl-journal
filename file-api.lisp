@@ -22,7 +22,7 @@
           (setf (getf plist key) contents)
           (process-by-line (cdr lines) plist))
         (progn
-          (setf (getf plist :body) (prepare-body (format nil "~{~A~^~% ~}" lines)))
+          (setf (getf plist :body) (prepare-body (format nil "~{~A~^~%~}" lines)))
           plist
           ))))
 
