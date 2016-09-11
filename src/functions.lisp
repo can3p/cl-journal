@@ -1,4 +1,9 @@
-(in-package #:cl-journal/functions)
+(in-package :cl-user)
+(defpackage cl-journal.functions
+  (:use :cl)
+  (:export :get-date-struct))
+
+(in-package :cl-journal.functions)
 
 (defun get-date-struct (&optional ts)
   (multiple-value-bind

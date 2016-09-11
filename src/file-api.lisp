@@ -1,4 +1,10 @@
-(in-package #:file-api)
+(in-package :cl-user)
+(defpackage cl-journal.file-api
+  (:use :cl)
+  (:import-from :cl-markdown :markdown)
+  (:export :parse-post-file :read-file))
+
+(in-package :cl-journal.file-api)
 
 (defun make-keyword (name) (values (intern (string-upcase name) "KEYWORD")))
 

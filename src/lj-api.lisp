@@ -1,4 +1,10 @@
-(in-package #:lj-api)
+(in-package :cl-user)
+(defpackage cl-journal.lj-api
+  (:use :cl :s-xml-rpc)
+  (:import-from :cl-journal.functions :get-date-struct)
+  (:export :parse-post-answer :create-post :update-post :delete-post :*livejournal-login* :*livejournal-password*))
+
+(in-package :cl-journal.lj-api)
 
 (defvar *livejournal-login* nil)
 (defvar *livejournal-password* nil)

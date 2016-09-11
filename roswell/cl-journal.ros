@@ -6,7 +6,7 @@ exec ros -Q -- $0 "$@"
 (ql:quickload '(:cl-journal) :silent t)
 
 (defpackage :ros.script.cl-journal.3675449222
-  (:use :cl :cl-journal :client :lj-api :uiop/run-program))
+  (:use :cl :cl-journal :cl-journal.client :cl-journal.lj-api :uiop/run-program))
 
 (in-package :ros.script.cl-journal.3675449222)
 

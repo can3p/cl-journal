@@ -1,4 +1,9 @@
-(in-package #:client)
+(in-package :cl-user)
+(defpackage cl-journal.client
+  (:use :cl :uiop/run-program)
+  (:export :setup :get-login :get-password))
+
+(in-package :cl-journal.client)
 
 (defvar *pre-commit-hook* (format nil "~&#!/usr/bin/env bash
 cl-journal sync
@@ -20,8 +25,8 @@ git add posts.lisp
 (defun setup-env ()
   (uiop/os::chdir #P"/Users/dpetrov/test-drafts/")
   (setf *default-pathname-defaults* #P"/Users/dpetrov/test-drafts/")
-  (setf lj-api::*livejournal-login* (get-login))
-  (setf lj-api::*livejournal-password* (get-password lj-api::*livejournal-login*))
+  (setf cl-journal.lj-api::*livejournal-login* (get-login))
+  (setf cl-journal.lj-api::*livejournal-password* (get-password cl-journal.lj-api::*livejournal-login*))
   )
 
 (defun get-login ()

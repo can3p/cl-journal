@@ -1,27 +1,11 @@
-;;;; cl-journal.lisp
+(in-package :cl-user)
+(defpackage cl-journal
+  (:use :cl :cl-journal.lj-api :cl-journal.file-api :s-xml-rpc :cl-markdown)
+  (:import-from :uiop/os :getcwd)
+  (:import-from :cl-journal.functions :get-date-struct)
+  (:export :*posts* :create-post-from-file :top-git-dir-p :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
 
-(in-package #:cl-markdown)
-
-(defmethod render-span-to-html :before
-    ((code (eql 'inline-link)) body encoding-method)
-  (let ((record (find-if #'(lambda (x) (equal (getf x :filename)
-                                              (cadr body)))
-                         cl-journal::*posts*
-                         )))
-    (if record
-        (setf (cadr body) (getf record :url)))))
-
-(defextension (lj-user :arguments ((name :required)) :insertp t)
-  (setf name (ensure-string name))
-  (let ((safe-name (html-safe-name name)))
-    (ecase phase
-      (:parse)
-      (:render
-       (format nil "<lj user='~a'>" safe-name)))))
-
-(push 'lj-user *render-active-functions*)
-
-(in-package #:cl-journal)
+(in-package :cl-journal)
 
 (defvar *posts* nil)
 (defvar *posts-file* "posts.lisp")

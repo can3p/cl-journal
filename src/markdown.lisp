@@ -1,0 +1,20 @@
+(in-package #:cl-markdown)
+
+(defmethod render-span-to-html :before
+    ((code (eql 'inline-link)) body encoding-method)
+  (let ((record (find-if #'(lambda (x) (equal (getf x :filename)
+                                              (cadr body)))
+                         cl-journal::*posts*
+                         )))
+    (if record
+        (setf (cadr body) (getf record :url)))))
+
+(defextension (lj-user :arguments ((name :required)) :insertp t)
+  (setf name (ensure-string name))
+  (let ((safe-name (html-safe-name name)))
+    (ecase phase
+      (:parse)
+      (:render
+       (format nil "<lj user='~a'>" safe-name)))))
+
+(push 'lj-user *render-active-functions*)

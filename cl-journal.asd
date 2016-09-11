@@ -18,12 +18,12 @@ This file is a part of cl-journal2 project.
   :components ((:module "src"
                 :components
                 (
-                 (:file "package")
+                 (:file "markdown" :depends-on ("cl-journal"))
                  (:file "functions")
                  (:file "file-api")
                  (:file "client")
-                 (:file "lj-api")
-                 (:file "cl-journal")
+                 (:file "lj-api" :depends-on ("functions"))
+                 (:file "cl-journal" :depends-on ("functions" "file-api" "lj-api"))
                  )))
   :long-description
   #.(with-open-file (stream (merge-pathnames
