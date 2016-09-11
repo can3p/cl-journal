@@ -2,6 +2,7 @@
 
 (defun make-keyword (name) (values (intern (string-upcase name) "KEYWORD")))
 
+;; (setf sb-impl::*default-external-format* :UTF-8)
 (defun read-file (filename)
   (with-open-file (stream filename)
     (loop for line = (read-line stream nil)
