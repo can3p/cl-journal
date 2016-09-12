@@ -27,6 +27,12 @@ Commands:
     sync
         Find new posts and publish them. Drafts will be skipped client
         will prompt before publishing every file.
+
+    url <file>
+        Lookup url where file was published and print it
+
+    build
+        run ros build to make script run faster
 "))
 
 (defun main (&optional (command "help") (arg ()))
