@@ -2,7 +2,13 @@
 
 (defpackage cl-journal.functions
   (:use :cl :uiop/run-program)
-  (:export :get-date-struct))
+  (:export :get-date-struct
+           :get-date-struct-str
+           :cwd-is-git-dir-p
+           :exec
+           :prompt-read
+           :prompt-read-password
+           :chdir))
 
 (in-package :cl-journal.functions)
 
@@ -17,6 +23,18 @@
           :day date
           :hour hour
           :min minute)))
+
+(defun get-date-struct-str (&optional ts)
+  (multiple-value-bind
+        (second minute hour date month year)
+      (decode-universal-time (or ts (get-universal-time)))
+    (declare (ignore second))
+
+    (list "year" year
+          "mon" month
+          "day" date
+          "hour" hour
+          "min" minute)))
 
 (defun chdir (dir)
   (uiop/os::chdir dir)

@@ -11,10 +11,10 @@ cl-journal sync
 git add posts.lisp
 "))
 
-(defun setup-env ()
+(defun setup-dev-env ()
   (chdir #P"/Users/dpetrov/test-drafts/")
-  (setf cl-journal.lj-api::*livejournal-login* (get-login))
-  (setf cl-journal.lj-api::*livejournal-password* (get-password cl-journal.lj-api::*livejournal-login*)))
+  (setf cl-journal.lj-api:*livejournal-login* (get-login))
+  (setf cl-journal.lj-api:*livejournal-password* (get-password cl-journal.lj-api::*livejournal-login*)))
 
 (defun get-login () (exec "git config livejournal.login"))
 

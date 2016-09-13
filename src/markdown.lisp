@@ -2,10 +2,7 @@
 
 (defmethod render-span-to-html :before
     ((code (eql 'inline-link)) body encoding-method)
-  (let ((record (find-if #'(lambda (x) (equal (getf x :filename)
-                                              (cadr body)))
-                         cl-journal::*posts*
-                         )))
+  (let ((record (cl-journal.db:get-by-fname cl-journal::*posts* (cadr body))))
     (if record
         (setf (cadr body) (getf record :url)))))
 

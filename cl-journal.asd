@@ -14,15 +14,17 @@ This file is a part of cl-journal2 project.
   :depends-on (#:s-xml-rpc
                #:md5
                #:uiop
+               #:alexandria
                #:cl-markdown)
   :components ((:module "src"
                 :components
                 (
                  (:file "markdown" :depends-on ("cl-journal"))
                  (:file "functions")
+                 (:file "db")
                  (:file "file-api")
                  (:file "settings")
-                 (:file "lj-api" :depends-on ("functions"))
+                 (:file "lj-api" :depends-on ("functions" "db"))
                  (:file "cl-journal" :depends-on ("functions" "file-api" "lj-api"))
                  )))
   :long-description
