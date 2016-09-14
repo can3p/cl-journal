@@ -3,7 +3,7 @@
   (:use :cl :cl-journal.lj-api :cl-journal.file-api :s-xml-rpc :cl-markdown)
   (:import-from :uiop/os :getcwd)
   (:import-from :cl-journal.functions :get-date-struct)
-  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified)
+  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified :get-deleted)
   (:export :*posts* :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
 
 (in-package :cl-journal)

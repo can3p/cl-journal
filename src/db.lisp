@@ -17,6 +17,7 @@
    :filename
    :title
    :get-modified
+   :get-deleted
    :publish-post
    :update-post
    :draft)
@@ -58,10 +59,15 @@
 
 (defmethod modified-p ((post <post>))
   (let ((fname (filename post)))
-      (and
-       (probe-file fname)
-       (< (or (updated-at post) (created-at post))
-          (file-write-date fname)))))
+    (and
+     (probe-file fname)
+     (< (or (updated-at post) (created-at post))
+        (file-write-date fname)))))
+
+(defgeneric deleted-p (post))
+
+(defmethod deleted-p ((post <post>))
+  (not (probe-file (filename post))))
 
 (defun create-post-from-xmlrpc-struct (struct fname)
   (make-instance '<post>
@@ -118,6 +124,11 @@
 (defmethod get-modified ((db <db>))
   (remove-if-not #'modified-p (posts db)))
 
+
+(defgeneric get-deleted (db))
+
+(defmethod get-deleted ((db <db>))
+  (remove-if-not #'deleted-p (posts db)))
 
 (defmethod to-list ((db <db>))
   (mapcar #'to-list (posts db)))
