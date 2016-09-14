@@ -3,7 +3,7 @@
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct)
   (:import-from :cl-journal.db :to-xmlrpc-struct :<post-file> :<post> :read-from-file :create-post-from-xmlrpc-struct :filename)
-  (:export :create-new-post :update-old-post :parse-post-answer :update-post :delete-post :*livejournal-login* :*livejournal-password*))
+  (:export :create-new-post :update-old-post :delete-post :*livejournal-login* :*livejournal-password*))
 
 (in-package :cl-journal.lj-api)
 
