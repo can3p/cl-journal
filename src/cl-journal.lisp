@@ -3,7 +3,7 @@
   (:use :cl :cl-journal.lj-api :cl-journal.file-api :s-xml-rpc :cl-markdown)
   (:import-from :uiop/os :getcwd)
   (:import-from :cl-journal.functions :get-date-struct)
-  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified :get-deleted)
+  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified :get-deleted :delete-post)
   (:export :*posts* :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
 
 (in-package :cl-journal)
@@ -16,7 +16,7 @@
                        :direction :output
                        :if-exists :supersede)
     (with-standard-io-syntax
-      (pprint *posts* out))))
+      (pprint (to-list *posts*) out))))
 
 (defun restore-posts ()
   (if (probe-file *posts-file*)
@@ -41,6 +41,9 @@
              *posts*))
 
 (defmethod publish-post :after ((db <db>) (post-file <post-file>))
+  (save-posts))
+
+(defmethod delete-post :after ((db <db>) (post <post>))
   (save-posts))
 
 (defmethod update-post :after ((post <post>))
@@ -82,23 +85,16 @@
         (format t "No published files were modified~%"))))
 
 (defun unpublish-deleted-files ()
-  (let ((modified (get-deleted-files)))
-    (if (> (length modified) 0)
+  (let ((deleted (get-deleted *posts*)))
+    (if (> (length deleted) 0)
         (progn
-          (if (> (length modified) 1)
-              (format t "There are ~a deleted files to unpublish~%" (length modified))
+          (if (> (length deleted) 1)
+              (format t "There are ~a deleted files to unpublish~%" (length deleted))
               (format t "There a deleted file to unpublish~%"))
-          (loop for post in modified do
+          (loop for post in deleted do
             (let ((prompt (format nil "Filename: ~a~%Url: ~a~%~%Unpublish this file?"
-                                  (getf post :filename)
-                                  (getf post :url))))
+                                  (filename post)
+                                  (cl-journal.db:url post))))
               (if (y-or-n-p prompt)
-                  (unpublish-post-from-object-and-update-db post)))))
+                  (delete-post *posts* post)))))
         (format t "No published files were deleted~%"))))
-
-(defun unpublish-post-from-object-and-update-db (post)
-  (delete-post post)
-  (setf *posts* (remove-if #'(lambda (old-post)
-                               (equal (getf old-post :itemid)
-                                      (getf post :itemid))) *posts*))
-  (save-posts))

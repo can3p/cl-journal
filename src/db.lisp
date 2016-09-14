@@ -4,7 +4,7 @@
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct-str)
   (:import-from :cl-journal.file-api :parse-post-file)
-  (:import-from :cl-journal.lj-api :create-new-post :update-old-post)
+  (:import-from :cl-journal.lj-api :create-new-post :update-old-post :delete-old-post)
   (:export :<post-file>
    :<post>
    :<db>
@@ -16,10 +16,12 @@
    :get-by-fname
    :filename
    :title
+   :url
    :get-modified
    :get-deleted
    :publish-post
    :update-post
+   :delete-post
    :draft)
   )
 
@@ -140,6 +142,13 @@
 (defun create-db-from-list (l)
   (make-instance '<db>
                  :posts (mapcar #'create-post-from-list l)))
+
+(defgeneric delete-post (db post))
+
+(defmethod delete-post ((db <db>) (post <post>))
+  (delete-post post)
+  (setf (posts db)
+        (remove-if #'(lambda (p) (string= (filename p) (filename post))) db)))
 
 (defgeneric publish-post (db post))
 

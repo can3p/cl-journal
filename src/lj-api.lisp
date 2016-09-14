@@ -3,7 +3,7 @@
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct)
   (:import-from :cl-journal.db :to-xmlrpc-struct :<post-file> :<post> :read-from-file :create-post-from-xmlrpc-struct :filename)
-  (:export :create-new-post :update-old-post :delete-post :*livejournal-login* :*livejournal-password*))
+  (:export :create-new-post :update-old-post :delete-old-post :*livejournal-login* :*livejournal-password*))
 
 (in-package :cl-journal.lj-api)
 
@@ -87,12 +87,6 @@
       )))
 
 
-(defun delete-post (plist)
-  (editevent (concatenate 'list
-                          (get-date-struct)
-                          (list :body ""
-                                :itemid (getf plist :itemid)))))
-
 (defgeneric create-new-post (post))
 
 (defmethod create-new-post ((post string))
@@ -109,6 +103,20 @@
 
     (create-post-from-xmlrpc-struct response (filename post))))
 
+
+(defgeneric delete-old-post (post))
+
+(defmethod delete-old-post ((post <post>))
+  (let* ((request (s-xml-rpc:encode-xml-rpc-call
+                   "LJ.XMLRPC.editevent"
+                   ;; @TODO - reset body & title there
+                   (to-xmlrpc-struct post #'add-challenge)))
+         (response (s-xml-rpc:xml-rpc-call request
+                                           :url "/interface/xmlrpc"
+                                           :host "www.livejournal.com"))
+         )
+
+    response))
 
 (defgeneric update-old-post (post))
 
