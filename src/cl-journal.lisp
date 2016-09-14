@@ -36,9 +36,6 @@
     (mapcar #'read-from-file
             (remove-if #'file-published-p (get-markdown-files)))))
 
-(defun get-modified-files ()
-  (get-modified *posts*))
-
 (defun get-deleted-files ()
   (remove-if #'(lambda (post) (probe-file (getf post :filename)))
              *posts*))
@@ -70,7 +67,7 @@
         (format t "No new files to publish~%"))))
 
 (defun publish-modified-files ()
-  (let ((modified (get-modified-files)))
+  (let ((modified (get-modified *posts*)))
     (if (> (length modified) 0)
         (progn
           (if (> (length modified) 1)
