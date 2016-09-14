@@ -3,7 +3,7 @@
   (:use :cl :cl-journal.lj-api :cl-journal.file-api :s-xml-rpc :cl-markdown)
   (:import-from :uiop/os :getcwd)
   (:import-from :cl-journal.functions :get-date-struct)
-  (:import-from :cl-journal.db :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified)
+  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified)
   (:export :*posts* :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
 
 (in-package :cl-journal)
@@ -43,10 +43,11 @@
   (remove-if #'(lambda (post) (probe-file (getf post :filename)))
              *posts*))
 
-(defun publish-post-from-object (post-file)
-  (let ((post (publish-post *posts* post-file)))
-    (save-posts)
-    post))
+(defmethod publish-post :after ((db <db>) (post-file <post-file>))
+  (save-posts))
+
+(defmethod update-post :after ((post <post>))
+  (save-posts))
 
 (defun lookup-file-url (fname)
   (let ((obj (file-published-p fname)))
@@ -65,7 +66,7 @@
                                   (filename post)
                                   (title post))))
               (if (y-or-n-p prompt)
-                  (publish-post-from-object post)))))
+                  (publish-post *posts* post)))))
         (format t "No new files to publish~%"))))
 
 (defun publish-modified-files ()

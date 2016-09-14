@@ -6,7 +6,8 @@
   (:import-from :cl-journal.file-api :parse-post-file)
   (:import-from :cl-journal.lj-api :create-new-post :update-old-post)
   (:export :<post-file>
-           :<post>
+   :<post>
+   :<db>
    :to-xmplrpc-struct
            :read-from-file
    :create-post-from-xmlrpc-struct
