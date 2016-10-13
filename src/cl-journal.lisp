@@ -1,7 +1,6 @@
 (in-package :cl-user)
 (defpackage cl-journal
   (:use :cl :cl-journal.lj-api :cl-journal.file-api :s-xml-rpc :cl-markdown)
-  (:import-from :uiop/os :getcwd)
   (:import-from :cl-journal.functions :get-date-struct)
   (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified :get-deleted :delete-post)
   (:export :*posts* :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
@@ -23,10 +22,6 @@
       (with-open-file (in *posts-file*)
         (with-standard-io-syntax
           (setf *posts* (create-db-from-list (read in)))))))
-
-(defun get-markdown-files ()
-  (mapcar #'(lambda (x) (enough-namestring x (getcwd)))
-          (directory "./**/*.md")))
 
 (defun file-published-p (fname)
   (get-by-fname *posts* fname))

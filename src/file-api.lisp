@@ -1,8 +1,9 @@
 (in-package :cl-user)
 (defpackage cl-journal.file-api
   (:use :cl)
+  (:import-from :uiop/os :getcwd)
   (:import-from :cl-markdown :markdown)
-  (:export :parse-post-file :read-file))
+  (:export :parse-post-file :read-file :get-markdown-files))
 
 (in-package :cl-journal.file-api)
 
@@ -36,3 +37,7 @@
 (defun prepare-body (text)
   (with-output-to-string (out)
     (markdown (string-trim '(#\Space #\Newline) text) :stream out)))
+
+(defun get-markdown-files ()
+  (mapcar #'(lambda (x) (enough-namestring x (getcwd)))
+          (directory "./**/*.md")))
