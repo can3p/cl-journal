@@ -25,7 +25,7 @@ This file is a part of cl-journal2 project.
                  (:file "file-api")
                  (:file "settings")
                  (:file "lj-api" :depends-on ("functions" "db"))
-                 (:file "cl-journal" :depends-on ("functions" "file-api" "lj-api"))
+                 (:file "cl-journal" :depends-on ("file-api" "lj-api"))
                  )))
   :long-description
   #.(with-open-file (stream (merge-pathnames
