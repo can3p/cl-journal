@@ -22,12 +22,9 @@
         (with-standard-io-syntax
           (setf *posts* (create-db-from-list (read in)))))))
 
-(defun file-published-p (fname)
-  (get-by-fname *posts* fname))
-
 (defun get-new-files ()
   (->> (get-markdown-files)
-       (remove-if #'file-published-p)
+       (remove-if #'(lambda (fname) (get-by-fname *posts* fname)))
        (mapcar #'read-from-file)
        (remove-if #'draft)))
 
