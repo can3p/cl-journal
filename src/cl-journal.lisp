@@ -31,10 +31,6 @@
     (mapcar #'read-from-file
             (remove-if #'file-published-p (get-markdown-files)))))
 
-(defun get-deleted-files ()
-  (remove-if #'(lambda (post) (probe-file (getf post :filename)))
-             *posts*))
-
 (defmethod publish-post :after ((db <db>) (post-file <post-file>))
   (save-posts))
 
