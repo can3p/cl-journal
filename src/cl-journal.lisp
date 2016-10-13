@@ -1,6 +1,6 @@
 (in-package :cl-user)
 (defpackage cl-journal
-  (:use :cl :cl-journal.lj-api :cl-journal.file-api)
+  (:use :cl :cl-arrows :cl-journal.lj-api :cl-journal.file-api)
   (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :publish-post :update-post :get-modified :get-deleted :delete-post :url)
   (:export :*posts* :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
 
@@ -26,9 +26,10 @@
   (get-by-fname *posts* fname))
 
 (defun get-new-files ()
-  (remove-if #'draft
-    (mapcar #'read-from-file
-            (remove-if #'file-published-p (get-markdown-files)))))
+  (->> (get-markdown-files)
+       (remove-if #'file-published-p)
+       (mapcar #'read-from-file)
+       (remove-if #'draft)))
 
 (defmethod publish-post :after ((db <db>) (post-file <post-file>))
   (save-posts))

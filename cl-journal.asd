@@ -15,6 +15,7 @@ This file is a part of cl-journal2 project.
                #:md5
                #:uiop
                #:alexandria
+               #:cl-arrows
                #:cl-markdown)
   :components ((:module "src"
                 :components
