@@ -44,9 +44,6 @@
 
 (defgeneric create-new-post (post))
 
-(defmethod create-new-post ((post string))
-  (create-new-post (read-from-file post)))
-
 (defmethod create-new-post ((post <post-file>))
   (let* ((request (s-xml-rpc:encode-xml-rpc-call
                    "LJ.XMLRPC.postevent"
