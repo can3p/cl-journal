@@ -60,7 +60,6 @@ This list is not structured in a particular order
 * reposts
 * preview
 * backwards sync to get updates from the livejournal.com
-* post deletion
 * photo upload functionality
 
 ## License
