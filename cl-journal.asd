@@ -21,7 +21,7 @@ This file is a part of cl-journal2 project.
                 (
                  (:file "markdown" :depends-on ("cl-journal"))
                  (:file "functions")
-                 (:file "db")
+                 (:file "db" :depends-on ("functions" "file-api"))
                  (:file "file-api")
                  (:file "settings")
                  (:file "lj-api" :depends-on ("functions" "db"))

@@ -4,7 +4,6 @@
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct-str)
   (:import-from :cl-journal.file-api :parse-post-file)
-  (:import-from :cl-journal.lj-api :create-new-post :update-old-post :delete-old-post)
   (:export :<post-file>
    :<post>
    :<db>
@@ -31,6 +30,44 @@
 
 (defun xmember (struct member)
   (s-xml-rpc:get-xml-rpc-struct-member struct member))
+
+(defclass <post-file> ()
+  (
+   (draft :initarg :draft :initform nil :reader draft)
+   (filename :initarg :filename :reader filename)
+   (title :initarg :title :reader title)
+   (body :initarg :body :reader body)
+   (privacy :initarg :privacy :reader privacy)
+   (fields :initarg :fields :reader fields)
+   ))
+
+(defmethod print-object ((post-file <post-file>) stream)
+  (format stream "<post-file filename:~a>~%" (filename post-file)))
+
+(defun read-from-file (fname)
+  (let ((parsed (parse-post-file fname)))
+    (make-instance '<post-file>
+                   :filename fname
+                   :draft (getf parsed :draft)
+                   :title (getf parsed :title)
+                   :body (getf parsed :body)
+                   :privacy (getf parsed :privacy)
+                   :fields (alexandria:remove-from-plist parsed :title :body :privacy)
+                   )))
+
+(defmethod to-event-list ((post <post-file>) &optional (transform #'identity))
+  (let ((l (list
+            "event" (body post)
+            "subject" (title post)
+            "props" (add-props (fields post))
+            )))
+    (funcall transform (add-date (add-privacy-fields l (privacy post))))))
+
+(defmethod to-xmlrpc-struct ((post <post-file>) &optional (transform #'identity))
+  (let ((l (to-event-list post transform)))
+    (setf (getf l "props")
+          (apply #'s-xml-rpc:xml-rpc-struct (getf l "props")))
+    (apply #'s-xml-rpc:xml-rpc-struct l)))
 
 (defclass <post> ()
   (
@@ -184,43 +221,3 @@
   (concatenate 'list
                plist
                (get-date-struct-str ts)))
-
-
-
-(defclass <post-file> ()
-  (
-   (draft :initarg :draft :initform nil :reader draft)
-   (filename :initarg :filename :reader filename)
-   (title :initarg :title :reader title)
-   (body :initarg :body :reader body)
-   (privacy :initarg :privacy :reader privacy)
-   (fields :initarg :fields :reader fields)
-   ))
-
-(defmethod print-object ((post-file <post-file>) stream)
-  (format stream "<post-file filename:~a>~%" (filename post-file)))
-
-(defun read-from-file (fname)
-  (let ((parsed (parse-post-file fname)))
-    (make-instance '<post-file>
-                   :filename fname
-                   :draft (getf parsed :draft)
-                   :title (getf parsed :title)
-                   :body (getf parsed :body)
-                   :privacy (getf parsed :privacy)
-                   :fields (alexandria:remove-from-plist parsed :title :body :privacy)
-                   )))
-
-(defmethod to-event-list ((post <post-file>) &optional (transform #'identity))
-  (let ((l (list
-            "event" (body post)
-            "subject" (title post)
-            "props" (add-props (fields post))
-            )))
-    (funcall transform (add-date (add-privacy-fields l (privacy post))))))
-
-(defmethod to-xmlrpc-struct ((post <post-file>) &optional (transform #'identity))
-  (let ((l (to-event-list post transform)))
-    (setf (getf l "props")
-          (apply #'s-xml-rpc:xml-rpc-struct (getf l "props")))
-    (apply #'s-xml-rpc:xml-rpc-struct l)))
