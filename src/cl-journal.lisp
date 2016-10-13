@@ -9,6 +9,16 @@
 (defvar *posts* nil)
 (defvar *posts-file* "posts.lisp")
 
+;; update db after any actions on posts
+(defmethod publish-post :after ((db <db>) (post-file <post-file>))
+  (save-posts))
+
+(defmethod delete-post :after ((db <db>) (post <post>))
+  (save-posts))
+
+(defmethod update-post :after ((post <post>))
+  (save-posts))
+
 (defun save-posts ()
   (with-open-file (out *posts-file*
                        :direction :output
@@ -27,15 +37,6 @@
        (remove-if #'(lambda (fname) (get-by-fname *posts* fname)))
        (mapcar #'read-from-file)
        (remove-if #'draft)))
-
-(defmethod publish-post :after ((db <db>) (post-file <post-file>))
-  (save-posts))
-
-(defmethod delete-post :after ((db <db>) (post <post>))
-  (save-posts))
-
-(defmethod update-post :after ((post <post>))
-  (save-posts))
 
 (defun lookup-file-url (fname)
   (let ((obj (get-by-fname *posts* fname)))
