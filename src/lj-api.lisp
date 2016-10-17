@@ -2,8 +2,22 @@
 (defpackage cl-journal.lj-api
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct)
-  (:import-from :cl-journal.db :to-xmlrpc-struct :<post-file> :<post> :read-from-file :create-post-from-xmlrpc-struct :filename)
-  (:export :create-new-post :update-old-post :delete-old-post :*livejournal-login* :*livejournal-password*))
+  (:import-from
+   :cl-journal.db
+   :to-xmlrpc-struct
+   :<post-file>
+   :<post>
+   :<db>
+   :read-from-file
+   :create-post-from-xmlrpc-struct
+   :filename
+   :updated-at
+   :posts)
+  (:export :create-new-post :update-old-post :delete-old-post :*livejournal-login* :*livejournal-password*
+   :publish-post
+   :update-post
+   :delete-post
+))
 
 (in-package :cl-journal.lj-api)
 
@@ -82,3 +96,23 @@
          )
 
     response))
+
+
+(defgeneric publish-post (db post))
+
+(defmethod publish-post ((db <db>) (post-file <post-file>))
+  (let ((post (create-new-post post-file)))
+    (push post (posts db))))
+
+(defgeneric delete-post (db post))
+
+(defmethod delete-post ((db <db>) (post <post>))
+  (delete-old-post post)
+  (setf (posts db)
+        (remove-if #'(lambda (p) (string= (filename p) (filename post))) db)))
+
+(defgeneric update-post (post))
+
+(defmethod update-post ((post <post>))
+  (update-old-post post)
+  (setf (updated-at post) (get-universal-time)))

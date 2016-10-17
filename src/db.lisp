@@ -8,7 +8,7 @@
    :<post>
    :<db>
    :to-xmplrpc-struct
-           :read-from-file
+   :read-from-file
    :create-post-from-xmlrpc-struct
    :create-db-from-list
    :to-list
@@ -18,9 +18,7 @@
    :url
    :get-modified
    :get-deleted
-   :publish-post
-   :update-post
-   :delete-post
+   :updated-at
    :draft)
   )
 
@@ -141,12 +139,6 @@
    :filename (filename post)
    ))
 
-(defgeneric update-post (post))
-
-(defmethod update-post ((post <post>))
-  (update-old-post post)
-  (setf (updated-at post) (get-universal-time)))
-
 (defmethod to-xmlrpc-struct ((post <post>) &optional (transform #'identity))
   (let ((*add-date-ts* (created-at post)))
     (to-xmlrpc-struct (read-from-file (filename post)) transform)))
@@ -179,19 +171,6 @@
 (defun create-db-from-list (l)
   (make-instance '<db>
                  :posts (mapcar #'create-post-from-list l)))
-
-(defgeneric delete-post (db post))
-
-(defmethod delete-post ((db <db>) (post <post>))
-  (delete-post post)
-  (setf (posts db)
-        (remove-if #'(lambda (p) (string= (filename p) (filename post))) db)))
-
-(defgeneric publish-post (db post))
-
-(defmethod publish-post ((db <db>) (post-file <post-file>))
-  (let ((post (create-new-post post-file)))
-    (push post (posts db))))
 
 (defun add-props (plist)
   (let* ((file-fields (list :music :mood :location :tags))
