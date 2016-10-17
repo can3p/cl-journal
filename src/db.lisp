@@ -4,6 +4,7 @@
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct-str)
   (:import-from :cl-journal.file-api :parse-post-file)
+  (:import-from :alexandria :curry :compose)
   (:export :<post-file>
    :<post>
    :<db>
@@ -139,9 +140,15 @@
    :filename (filename post)
    ))
 
+(defun add-itemid (post req)
+  (concatenate 'list
+               req
+               (list "itemid" (itemid post))))
+
 (defmethod to-xmlrpc-struct ((post <post>) &optional (transform #'identity))
   (let ((*add-date-ts* (created-at post)))
-    (to-xmlrpc-struct (read-from-file (filename post)) transform)))
+    (to-xmlrpc-struct (read-from-file (filename post))
+                      (compose (curry #'add-itemid post) transform))))
 
 (defclass <db> ()
   ((posts :initarg :posts :accessor posts)))
