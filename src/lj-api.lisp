@@ -2,6 +2,7 @@
 (defpackage cl-journal.lj-api
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct)
+  (:import-from :alexandria :compose)
   (:import-from
    :cl-journal.db
    :to-xmlrpc-struct
@@ -75,8 +76,7 @@
 (defmethod delete-old-post ((post <post>))
   (let* ((request (s-xml-rpc:encode-xml-rpc-call
                    "LJ.XMLRPC.editevent"
-                   ;; @TODO - reset body & title there
-                   (to-xmlrpc-struct post #'add-challenge)))
+                   (to-xmlrpc-struct post #'add-challenge t)))
          (response (s-xml-rpc:xml-rpc-call request
                                            :url "/interface/xmlrpc"
                                            :host "www.livejournal.com"))
@@ -109,7 +109,7 @@
 (defmethod delete-post ((db <db>) (post <post>))
   (delete-old-post post)
   (setf (posts db)
-        (remove-if #'(lambda (p) (string= (filename p) (filename post))) db)))
+        (remove-if #'(lambda (p) (string= (filename p) (filename post))) (posts db))))
 
 (defgeneric update-post (post))
 

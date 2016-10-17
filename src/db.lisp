@@ -62,7 +62,8 @@
             )))
     (funcall transform (add-date (add-privacy-fields l (privacy post))))))
 
-(defmethod to-xmlrpc-struct ((post <post-file>) &optional (transform #'identity))
+(defmethod to-xmlrpc-struct ((post <post-file>) &optional (transform #'identity) (is-deleted nil))
+  (declare (ignore is-deleted))
   (let ((l (to-event-list post transform)))
     (setf (getf l "props")
           (apply #'s-xml-rpc:xml-rpc-struct (getf l "props")))
@@ -80,7 +81,7 @@
    ))
 
 (defgeneric to-event-list (post &optional transform))
-(defgeneric to-xmlrpc-struct (post &optional transform))
+(defgeneric to-xmlrpc-struct (post &optional transform is-deleted))
 
 (defmethod print-object ((post <post>) stream)
   (format stream "<post filename:~a url:~a>~%" (filename post) (url post)))
@@ -145,10 +146,14 @@
                req
                (list "itemid" (itemid post))))
 
-(defmethod to-xmlrpc-struct ((post <post>) &optional (transform #'identity))
+(defmethod to-xmlrpc-struct ((post <post>) &optional (transform #'identity) (is-deleted nil))
   (let ((*add-date-ts* (created-at post)))
-    (to-xmlrpc-struct (read-from-file (filename post))
-                      (compose (curry #'add-itemid post) transform))))
+    (if is-deleted
+        (apply #'s-xml-rpc:xml-rpc-struct
+               (funcall (compose #'add-date transform (curry #'add-itemid post))
+                        '("event" "" "subject" "")))
+        (to-xmlrpc-struct (read-from-file (filename post))
+                          (compose (curry #'add-itemid post) transform)))))
 
 (defclass <db> ()
   ((posts :initarg :posts :accessor posts)))
