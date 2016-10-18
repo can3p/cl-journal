@@ -1,5 +1,6 @@
 # Changelog
 
+* 2016-10-19 Move code out of roswell script so that we can reuse it for buildapp
 * 2016-10-19 Massive refactoring to bring more sense into the code
 * 2016-09-12 Update help
 * 2016-09-12 Move package definitions into relevant files, use dot notation for naming
