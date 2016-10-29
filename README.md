@@ -25,10 +25,8 @@ and I'm not ready to provide any better way. Contributions are welcome!
 
 - Install roswell (`brew install roswell` will do)
 - Install sbcl (`ros install sbcl`)
-- Clone this repo to ~/common-lisp/cl-journal folder `git clone https://github.com/can3p/cl-journal ~/common-lisp/cl-journal`
-- add `~/.rosewell/bin` folder to your path (`echo 'PATH="$PATH:~/.roswell/bin"'`)
-- add a symbolic link for cl-journal script (`ln -s ~/common-lisp/cl-journal/roswell/cl-journal.ros ~/.rosewell/bin/cl-journal.ros`)
-- build it for better perforemance (`ros build ~/.rosewell/bin/cl-journal.ros`)
+- Add `~/.rosewell/bin` folder to your path (`echo 'PATH="$PATH:~/.roswell/bin"'`)
+- Run `ros install can3p/cl-journal` (since roswell 0.0.6.68)
 - Create a new repo for your blog and proceed to next section. Client setup is done!
 
 ## Current way of work
