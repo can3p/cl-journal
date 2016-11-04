@@ -20,6 +20,15 @@ Due to password storage only Mac OS X is supported at the moment.
 
 ## Install
 
+*Experimental install via Homebrew*
+
+```bash
+$ brew tap can3p/cl-journal
+$ brew install cl-journal
+```
+
+Wasn't that easy?
+
 Install is a bit tricky, especially if you're not used to common lisp environment
 and I'm not ready to provide any better way. Contributions are welcome!
 

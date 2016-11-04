@@ -1,5 +1,7 @@
 # Changelog
 
+* 2016-11-04 Added info about installation via homebrew
+
 ## 0.1.1
 
 * 2016-11-04 More fields in asd definition to please cl-brewer
