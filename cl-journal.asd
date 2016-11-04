@@ -1,5 +1,5 @@
 #|
-This file is a part of cl-journal2 project.
+This file is a part of cl-journal project.
 |#
 
 (in-package :cl-user)
@@ -10,7 +10,7 @@ This file is a part of cl-journal2 project.
 (defsystem cl-journal
   :description "Common lisp livejournal blog client"
   :author "Dmitry Petrov <dpetroff@gmail.com>"
-  :version "0.1.0"
+  :version "0.1.1"
   :license "Public Domain"
   :homepage "https://github.com/can3p/cl-journal"
   :source-control "https://github.com/can3p/cl-journal"
