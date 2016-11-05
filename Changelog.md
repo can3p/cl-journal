@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.1.3
+
+* 2016-11-05 Real fix for entry point
+
 ## 0.1.2
 
 * 2016-11-05 Fix entry point
