@@ -31,7 +31,10 @@ Commands:
         run ros build to make script run faster
 "))
 
-(defun main (&optional (command "help") (arg ()))
+(defun main (args)
+  (apply #'main-entry args))
+
+(defun main-entry (&optional (command "help") (arg ()))
   (if (cwd-is-git-dir-p)
       (cond
         ((equal command "init") (setup))

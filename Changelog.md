@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.1.2
+
+* 2016-11-05 Fix entry point
 * 2016-11-04 Added info about installation via homebrew
 
 ## 0.1.1
