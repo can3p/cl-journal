@@ -32,7 +32,7 @@ Commands:
 "))
 
 (defun main (args)
-  (apply #'main-entry args))
+  (apply #'main-entry (cdr args)))
 
 (defun main-entry (&optional (command "help") (arg ()))
   (if (cwd-is-git-dir-p)
