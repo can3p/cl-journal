@@ -1,5 +1,6 @@
 # Changelog
 
+* 2016-11-06 Add Makefile to test buildapp binaries without brew
 * 2016-11-06 Drop roswell support, since we can do everything with brew now
 
 ## 0.1.3
