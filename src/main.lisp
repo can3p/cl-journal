@@ -26,9 +26,6 @@ Commands:
 
     url <file>
         Lookup url where file was published and print it
-
-    build
-        run ros build to make script run faster
 "))
 
 (defun main (args)
@@ -59,7 +56,6 @@ Commands:
                                            (format t "~a~%" url)
                                            (format t "File is not published~%"))))
                                    (format t "Please specify filename to lookup~%")))
-        ((equal command "build") (exec "ros build ~/.roswell/bin/cl-journal.ros"))
         (t (help)))
       (progn
         (format t "Please run this command from top level directory in the git repo~%~%")

@@ -1,5 +1,7 @@
 # Changelog
 
+* 2016-11-06 Drop roswell support, since we can do everything with brew now
+
 ## 0.1.3
 
 * 2016-11-05 Real fix for entry point

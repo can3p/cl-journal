@@ -20,23 +20,11 @@ Due to password storage only Mac OS X is supported at the moment.
 
 ## Install
 
-*Experimental install via Homebrew*
-
 ```bash
 $ brew tap can3p/cl-journal
 $ brew install cl-journal
 ```
-
-Wasn't that easy?
-
-Install is a bit tricky, especially if you're not used to common lisp environment
-and I'm not ready to provide any better way. Contributions are welcome!
-
-- Install roswell (`brew install roswell` will do)
-- Install sbcl (`ros install sbcl`)
-- Add `~/.rosewell/bin` folder to your path (`echo 'PATH="$PATH:~/.roswell/bin"'`)
-- Run `ros install can3p/cl-journal` (since roswell 0.0.6.68)
-- Create a new repo for your blog and proceed to next section. Client setup is done!
+Create a new repo for your blog and proceed to next section. Client setup is done!
 
 ## Current way of work
 
