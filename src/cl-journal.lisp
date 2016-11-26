@@ -3,7 +3,7 @@
   (:use :cl :cl-arrows :cl-journal.lj-api :cl-journal.file-api)
   (:import-from :cl-journal.lj-api :publish-post :update-post :delete-post)
   (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :get-modified :get-deleted :url)
-  (:export :*posts* :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
+  (:export :*posts* :get-draft-files :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
 
 (in-package :cl-journal)
 
@@ -38,6 +38,14 @@
        (remove-if #'(lambda (fname) (get-by-fname *posts* fname)))
        (mapcar #'read-from-file)
        (remove-if #'draft)))
+
+(defun get-draft-files ()
+  (->> (get-markdown-files)
+       (remove-if #'(lambda (fname) (get-by-fname *posts* fname)))
+       (mapcar #'read-from-file)
+       (remove-if-not #'draft)
+       (mapcar #'filename)
+       ))
 
 (defun lookup-file-url (fname)
   (let ((obj (get-by-fname *posts* fname)))

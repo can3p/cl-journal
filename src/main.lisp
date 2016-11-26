@@ -24,6 +24,9 @@ Commands:
         Find new posts and publish them. Drafts will be skipped client
         will prompt before publishing every file.
 
+    drafts
+        Display the list with filenames of all drafts
+
     url <file>
         Lookup url where file was published and print it
 "))
@@ -56,6 +59,9 @@ Commands:
                                            (format t "~a~%" url)
                                            (format t "File is not published~%"))))
                                    (format t "Please specify filename to lookup~%")))
+        ((equal command "drafts") (progn
+                                    (restore-posts)
+                                    (format t "~{~a~^~%~}" (get-draft-files))))
         (t (help)))
       (progn
         (format t "Please run this command from top level directory in the git repo~%~%")
