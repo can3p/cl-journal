@@ -61,7 +61,7 @@ Commands:
                                    (format t "Please specify filename to lookup~%")))
         ((equal command "drafts") (progn
                                     (restore-posts)
-                                    (format t "~{~a~^~%~}" (get-draft-files))))
+                                    (format t "~{~a~%~}" (get-draft-files))))
         (t (help)))
       (progn
         (format t "Please run this command from top level directory in the git repo~%~%")
