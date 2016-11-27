@@ -7,10 +7,11 @@
 (in-package :cl-journal.main)
 
 (defun help ()
-  (format t "~&Usage:
-Livejournal client written in Common Lisp. Please run all commands in
-a top level directory of your git repo. Right now client is supposed
-to work on Mac OS X only.
+  (format t "~&
+Livejournal client written in Common Lisp. Version: ~a
+
+Please run all commands in a top level directory of your git repo.
+Right now client is supposed to work on Mac OS X only.
 
 Usage:
 cl-journal.ros [command]
@@ -29,7 +30,7 @@ Commands:
 
     url <file>
         Lookup url where file was published and print it
-"))
+" (asdf::component-version (asdf::find-system :cl-journal))))
 
 (defun main (args)
   (apply #'main-entry (cdr args)))
