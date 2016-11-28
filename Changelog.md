@@ -2,6 +2,11 @@
 
 ## 0.1.4
 
+* 2016-11-28 Fix post link functionality
+* 2016-11-27 Show program version in a help message
+
+## 0.1.4
+
 * 2016-11-26 Support drafts command
 * 2016-11-06 Add Makefile to test buildapp binaries without brew
 * 2016-11-06 Drop roswell support, since we can do everything with brew now
