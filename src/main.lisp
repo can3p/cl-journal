@@ -14,7 +14,7 @@ Please run all commands in a top level directory of your git repo.
 Right now client is supposed to work on Mac OS X only.
 
 Usage:
-cl-journal.ros [command]
+cl-journal [command]
 
 Commands:
     init
