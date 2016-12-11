@@ -14,6 +14,10 @@ workflow would by similar to the one we get with the help of static site
 generators - git repo with some files in markdown format which will be
 published on push.
 
+Another big advantage of this approach is that with local files it's much easier
+to find a post you published some time ago - no need to go the your post pages,
+just find the file with relevant post and link to it.
+
 Any file structure can be used, client will pick up any markdown files it can
 find.
 
@@ -23,6 +27,7 @@ find.
 * Privacy, Tags, Music, Location and Mood fields are supported
 * Links to files in the repo resolve to links to relevant posts in the blog
 * Update/removal of posts is supported when relevant file is modified/removed
+* Quick look up of post urls by filename
 
 ## Install
 

@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1
+
+* 2016-12-12 Misc fixes in help message and documentation
+
+## 0.2.0
+
+* 2016-12-12 sync command was renamed to push
+* Github index page was set up
+
 ## 0.1.4
 
 * 2016-11-28 Fix post link functionality
