@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.2
+
+* 2016-12-12 fix precommit hook code
+
 ## 0.2.1
 
 * 2016-12-12 Misc fixes in help message and documentation

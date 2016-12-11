@@ -7,7 +7,7 @@
 (in-package :cl-journal.settings)
 
 (defvar *pre-commit-hook* (format nil "~&#!/usr/bin/env bash
-cl-journal sync
+cl-journal push
 git add posts.lisp
 "))
 
