@@ -109,7 +109,7 @@ This list is not structured in a particular order
 - *Why doesn't client support hostings like [dreamwidth](https://www.dreamwidth.org/)?*
 
   It doesn't for no other reason than because I don't use it myself! If you do
-  consider opening a github issue.
+  consider opening a [github issue](https://github.com/can3p/cl-journal/issues).
 
 - *How can I help?*
 
