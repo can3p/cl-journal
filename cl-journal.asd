@@ -10,7 +10,7 @@ This file is a part of cl-journal project.
 (defsystem cl-journal
   :description "Common lisp livejournal blog client"
   :author "Dmitry Petrov <dpetroff@gmail.com>"
-  :version "0.1.6dev"
+  :version "0.2.0"
   :license "Public Domain"
   :homepage "https://github.com/can3p/cl-journal"
   :source-control "https://github.com/can3p/cl-journal"
