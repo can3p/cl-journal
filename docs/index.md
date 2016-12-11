@@ -41,7 +41,7 @@ Client setup is done!
 
 To write a new blog post create a new markdown file in the folder with header
 and actual post text separated be multiple newlines.  When ready fire
-`cl-journal sync` to get post published.
+`cl-journal push` to get post published.
 
 Here is an example of the post:
 
@@ -61,7 +61,7 @@ post it during the sync or add a `draft: 1` line at the header of the file. In
 the latter case client will ignore the file until you remove this line.
 
 **Note** cl-journal also supports post updates and deletions. To do that just
-edit/delete the relevant file and fire `cl-journal sync` command from the
+edit/delete the relevant file and fire `cl-journal push` command from the
 top level folder of your blog.
 
 **Note** At the moment cl-journal does not sync any information from the

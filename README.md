@@ -41,7 +41,7 @@ Some body with *markdown* support, link to {lj-user livejournal}
 ```
     
 - Privacy field is public by default. If specified can contain private, friends and public vlues
-- Publish with `cl-journal sync`
+- Publish with `cl-journal push`
 
 If you want to keep file in drafts for a while you can either
 keep rejecting to post it during the sync or add a `draft: ` line

@@ -21,7 +21,7 @@ Commands:
         Setup up a directory. Setup will ask for login name and password.
         Password will be stored in a default Mac OS X keychain.
 
-    sync
+    push
         Find new posts and publish them. Drafts will be skipped client
         will prompt before publishing every file.
 
@@ -39,7 +39,7 @@ Commands:
   (if (cwd-is-git-dir-p)
       (cond
         ((equal command "init") (setup))
-        ((equal command "sync") (let* ((*livejournal-login* (get-login))
+        ((equal command "push") (let* ((*livejournal-login* (get-login))
                                       (*livejournal-password* (get-password *livejournal-login*)))
                                  (if (or (equal "" *livejournal-login*)
                                          (equal "" *livejournal-password*)
