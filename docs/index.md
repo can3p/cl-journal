@@ -1,6 +1,6 @@
 # Markdown based Livejournal.com client
 
-[Changelog.md](Changelog)
+[Changelog](Changelog.md)
 
 cl-journal is a file-based command line client for Livejournal.com blogging
 service. Every post is simply yet another markdown file with some fields on the
