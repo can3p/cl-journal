@@ -12,6 +12,7 @@
    :read-from-file
    :create-post-from-xmlrpc-struct
    :filename
+   :journal
    :updated-at
    :posts)
   (:export :create-new-post :update-old-post :delete-old-post :*livejournal-login* :*livejournal-password*
@@ -68,7 +69,7 @@
                                            :host "www.livejournal.com"))
          )
 
-    (create-post-from-xmlrpc-struct response (filename post))))
+    (create-post-from-xmlrpc-struct response (filename post) (journal post))))
 
 
 (defgeneric delete-old-post (post))

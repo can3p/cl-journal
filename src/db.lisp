@@ -1,7 +1,7 @@
 (in-package :cl-user)
 
 (defpackage cl-journal.db
-  (:use :cl :s-xml-rpc)
+  (:use :cl :cl-arrows :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct-str)
   (:import-from :cl-journal.file-api :parse-post-file)
   (:import-from :alexandria :curry :compose)
@@ -16,6 +16,7 @@
    :get-by-fname
    :filename
    :title
+   :journal
    :url
    :get-modified
    :get-deleted
@@ -38,6 +39,7 @@
    (title :initarg :title :reader title)
    (body :initarg :body :reader body)
    (privacy :initarg :privacy :reader privacy)
+   (journal :initarg :journal :reader journal)
    (fields :initarg :fields :reader fields)
    ))
 
@@ -52,6 +54,7 @@
                    :title (getf parsed :title)
                    :body (getf parsed :body)
                    :privacy (getf parsed :privacy)
+                   :journal (getf parsed :journal)
                    :fields (alexandria:remove-from-plist parsed :title :body :privacy)
                    )))
 
@@ -61,7 +64,11 @@
             "subject" (title post)
             "props" (add-props (fields post))
             )))
-    (funcall transform (add-date (add-privacy-fields l (privacy post))))))
+    (-<> l
+         (add-privacy-fields (privacy post))
+         (add-usejournal (journal post) <>)
+         (add-date)
+         (funcall transform <>))))
 
 (defmethod to-xmlrpc-struct ((post <post-file>) &optional (transform #'identity) (is-deleted nil))
   (declare (ignore is-deleted))
@@ -75,6 +82,7 @@
    (updated-at :initarg :updated-at :initform (get-universal-time) :accessor updated-at)
    (created-at :initarg :created-at :initform (get-universal-time) :reader created-at)
    (filename :initarg :filename :reader filename)
+   (journal :initarg :journal :initform nil :reader journal)
    (itemid :initarg :itemid :reader itemid)
    (anum :initarg :anum :reader anum)
    (ditemid :initarg :ditemid :reader ditemid)
@@ -109,13 +117,14 @@
 (defmethod deleted-p ((post <post>))
   (not (probe-file (filename post))))
 
-(defun create-post-from-xmlrpc-struct (struct fname)
+(defun create-post-from-xmlrpc-struct (struct fname journal)
   (make-instance '<post>
                  :itemid (xmember struct :|itemid|)
                  :anum (xmember struct :|anum|)
                  :ditemid (xmember struct :|ditemid|)
                  :url (xmember struct :|url|)
                  :filename fname
+                 :journal journal
                  ))
 
 (defun create-post-from-list (plist)
@@ -127,6 +136,7 @@
                  :created-at (getf plist :created-at)
                  :updated-at (getf plist :updated-at)
                  :filename (getf plist :filename)
+                 :journal (getf plist :journal)
                  ))
 
 (defgeneric to-list (post))
@@ -140,6 +150,7 @@
    :created-at (created-at post)
    :updated-at (updated-at post)
    :filename (filename post)
+   :journal (journal post)
    ))
 
 (defun add-itemid (post req)
@@ -151,10 +162,17 @@
   (let ((*add-date-ts* (created-at post)))
     (if is-deleted
         (apply #'s-xml-rpc:xml-rpc-struct
-               (funcall (compose #'add-date transform (curry #'add-itemid post))
+               (funcall (compose #'add-date
+                                 transform
+                                 (curry #'add-usejournal (journal post))
+                                 (curry #'add-itemid post))
                         '("event" "" "subject" "")))
-        (to-xmlrpc-struct (read-from-file (filename post))
-                          (compose (curry #'add-itemid post) transform)))))
+        (let ((post-file (read-from-file (filename post))))
+          (if (string= (journal post-file) (journal post))
+              (to-xmlrpc-struct post-file
+                                (compose (curry #'add-itemid post)
+                                         transform))
+              (error "Post journal has been changed after post creation! Initial value was ~a and currently it's ~a. We do not support that now, please use initial value." (journal post) (journal post-file)))))))
 
 (defclass <db> ()
   ((posts :initarg :posts :accessor posts)))
@@ -216,3 +234,10 @@
   (concatenate 'list
                plist
                (get-date-struct-str ts)))
+
+(defun add-usejournal (journal plist)
+  (if (not (null journal))
+      (concatenate 'list
+                   plist
+                   (list "usejournal" journal))
+      plist))
