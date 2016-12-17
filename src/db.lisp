@@ -20,6 +20,7 @@
    :get-modified
    :get-deleted
    :updated-at
+   :get-last-published-post
    :draft)
   )
 
@@ -179,6 +180,9 @@
 (defmethod get-by-fname ((db <db>) fname)
   (find-if #'(lambda (post) (get-by-fname post fname))
         (posts db)))
+
+(defun get-last-published-post (db)
+  (car (sort (posts db) #'> :key #'created-at)))
 
 (defun create-db-from-list (l)
   (make-instance '<db>

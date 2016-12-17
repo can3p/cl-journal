@@ -28,6 +28,9 @@ Commands:
     drafts
         Display the list with filenames of all drafts
 
+    last
+        Open editor to edit last published post
+
     url <file>
         Lookup url where file was published and print it
 " (asdf::component-version (asdf::find-system :cl-journal))))
@@ -63,6 +66,9 @@ Commands:
         ((equal command "drafts") (progn
                                     (restore-posts)
                                     (format t "~{~a~%~}" (get-draft-files))))
+        ((equal command "last") (progn
+                                    (restore-posts)
+                                    (edit-last-published-post)))
         (t (help)))
       (progn
         (format t "Please run this command from top level directory in the git repo~%~%")

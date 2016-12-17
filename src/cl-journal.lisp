@@ -2,8 +2,15 @@
 (defpackage cl-journal
   (:use :cl :cl-arrows :cl-journal.lj-api :cl-journal.file-api)
   (:import-from :cl-journal.lj-api :publish-post :update-post :delete-post)
-  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :get-modified :get-deleted :url)
-  (:export :*posts* :get-draft-files :publish-new-files :publish-modified-files :unpublish-deleted-files :restore-posts :lookup-file-url))
+  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :get-modified :get-deleted :url :get-last-published-post)
+  (:export :*posts*
+           :get-draft-files
+           :publish-new-files
+           :publish-modified-files
+           :unpublish-deleted-files
+           :restore-posts
+           :lookup-file-url
+           :edit-last-published-post))
 
 (in-package :cl-journal)
 
@@ -32,6 +39,13 @@
       (with-open-file (in *posts-file*)
         (with-standard-io-syntax
           (setf *posts* (create-db-from-list (read in)))))))
+
+
+(defun edit-last-published-post ()
+  (let ((post (get-last-published-post *posts*)))
+    (if post
+        (magic-ed:magic-ed (filename post) :eval nil)
+        (format t "You don't have any published posts yet~%"))))
 
 (defun get-new-files ()
   (->> (get-markdown-files)

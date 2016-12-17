@@ -10,7 +10,7 @@ This file is a part of cl-journal project.
 (defsystem cl-journal
   :description "Common lisp livejournal blog client"
   :author "Dmitry Petrov <dpetroff@gmail.com>"
-  :version "0.2.2"
+  :version "0.2.3"
   :license "Public Domain"
   :homepage "https://github.com/can3p/cl-journal"
   :source-control "https://github.com/can3p/cl-journal"
@@ -19,10 +19,13 @@ This file is a part of cl-journal project.
                #:uiop
                #:alexandria
                #:cl-arrows
-               #:cl-markdown)
+               #:cl-markdown
+               #+sbcl :sb-introspect
+               )
   :components ((:module "src"
                 :components
                 (
+                 (:file "magic-ed")
                  (:file "markdown" :depends-on ("cl-journal"))
                  (:file "functions")
                  (:file "main" :depends-on ("settings" "lj-api" "cl-journal" "functions"))

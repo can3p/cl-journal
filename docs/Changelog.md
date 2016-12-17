@@ -2,6 +2,10 @@
 title: Changelog
 ---
 
+## 0.2.3
+
+* 2016-12-17 `last` command to open system editor with last published file
+
 ## 0.2.2
 
 * 2016-12-12 fix precommit hook code
