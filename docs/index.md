@@ -28,6 +28,7 @@ find.
 * Links to files in the repo resolve to links to relevant posts in the blog
 * Update/removal of posts is supported when relevant file is modified/removed
 * Quick look up of post urls by filename
+* Optional git pre-commit hook to publish posts
 
 ## Install
 
@@ -36,7 +37,6 @@ $ brew tap can3p/cl-journal
 $ brew install cl-journal
 $ mkdir yourblog.livejournal.com
 $ cd yourblog.livejournal.com
-$ git init
 $ cl-journal init
 ~~~
 
@@ -97,14 +97,6 @@ This list is not structured in a particular order
   filenames and all these link will be converted to the links of relevant
   posts. Another addon is `{lj-user livejournal}` command that will generate a
   proper link to a lj user blog.
-
-- *Why does client require git repository to be initialized?*
-
-  Git is used to store journal username and initial idea was that you would
-  like to backup your files somewhere and git is just the best option for the
-  text. You can use a service like [bitbucket.org](https://bitbucket.org) to
-  create a private repository for free. Anyway this dependency will go away
-  with next releases.
 
 - *Where is my password stored?*
 

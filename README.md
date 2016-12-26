@@ -17,6 +17,7 @@ Due to password storage only Mac OS X is supported at the moment.
 * Privacy, Tags, Music, Location and Mood fields are supported
 * Links to files in the repo resolve to links to relevant posts in the blog
 * Update/removal of posts is supported when relevant file is modified/removed
+* Optional git pre-commit hook to publish posts
 
 ## Install
 
@@ -28,7 +29,6 @@ Create a new repo for your blog and proceed to next section. Client setup is don
 
 ## Current way of work
 
-- setup local git repo for your posts and navigate there
 - fire `cl-journal init` and follow instructions
 - Write posts in the following format:
 - Refer lj users from markup with little effort
