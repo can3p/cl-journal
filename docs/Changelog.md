@@ -6,6 +6,10 @@ title: Changelog
 
 * Nothing
 
+## 0.3.1
+
+* fix typos that prevented `push` from working correctly
+
 ## 0.3.0
 
 * 2016-12-26 Most basic new command ever

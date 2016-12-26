@@ -101,7 +101,7 @@
     response))
 
 (defun set-credentials (db)
-  (if (or (not (string= (login db) *livejournal-login*))
+  (when (or (not (string= (login db) *livejournal-login*))
           (string= "" *livejournal-password*))
       (setf *livejournal-login* (login db))
       (setf *livejournal-password* (get-password (login db)))))
