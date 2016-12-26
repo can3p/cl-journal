@@ -3,22 +3,24 @@
   (:use :cl :s-xml-rpc)
   (:import-from :cl-journal.functions :get-date-struct)
   (:import-from :alexandria :compose)
+  (:import-from :cl-journal.settings
+                :get-password)
   (:import-from
    :cl-journal.db
    :to-xmlrpc-struct
    :<post-file>
    :<post>
    :<db>
+   :login
    :read-from-file
    :create-post-from-xmlrpc-struct
    :filename
    :journal
    :updated-at
    :posts)
-  (:export :create-new-post :update-old-post :delete-old-post :*livejournal-login* :*livejournal-password*
-   :publish-post
-   :update-post
-   :delete-post
+  (:export :publish-post
+           :update-post
+           :delete-post
 ))
 
 (in-package :cl-journal.lj-api)
@@ -51,12 +53,12 @@
                        "auth_challenge" challenge
                        "auth_response" auth-response))))
 
-(defun login ()
-  (let* ((struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge)))
-         (request (s-xml-rpc:encode-xml-rpc-call "LJ.XMLRPC.login" struct)))
-    (s-xml-rpc:xml-rpc-call request
-                            :url "/interface/xmlrpc"
-                            :host "www.livejournal.com")))
+;; (defun login ()
+;;   (let* ((struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge)))
+;;          (request (s-xml-rpc:encode-xml-rpc-call "LJ.XMLRPC.login" struct)))
+;;     (s-xml-rpc:xml-rpc-call request
+;;                             :url "/interface/xmlrpc"
+;;                             :host "www.livejournal.com")))
 
 (defgeneric create-new-post (post))
 
@@ -98,22 +100,32 @@
 
     response))
 
+(defun set-credentials (db)
+  (if (or (not (string= (login db) *livejournal-login*))
+          (string= "" *livejournal-password*))
+      (setf *livejournal-login* (login db))
+      (setf *livejournal-password* (get-password (login db)))))
+
 
 (defgeneric publish-post (db post))
 
 (defmethod publish-post ((db <db>) (post-file <post-file>))
+  (set-credentials db)
   (let ((post (create-new-post post-file)))
     (push post (posts db))))
 
 (defgeneric delete-post (db post))
 
 (defmethod delete-post ((db <db>) (post <post>))
+  (set-credentials db)
   (delete-old-post post)
   (setf (posts db)
-        (remove-if #'(lambda (p) (string= (filename p) (filename post))) (posts db))))
+        (remove-if #'(lambda (p) (string= (filename p) (filename post)))
+                   (posts db))))
 
-(defgeneric update-post (post))
+(defgeneric update-post (db post))
 
-(defmethod update-post ((post <post>))
+(defmethod update-post ((db <db>) (post <post>))
+  (set-credentials db)
   (update-old-post post)
   (setf (updated-at post) (get-universal-time)))

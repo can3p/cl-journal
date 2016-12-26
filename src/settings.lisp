@@ -1,8 +1,10 @@
 (in-package :cl-user)
 (defpackage cl-journal.settings
-  (:use :cl)
-  (:import-from :cl-journal.functions :exec :prompt-read :prompt-read-password :chdir)
-  (:export :setup :get-login :get-password))
+  (:use :cl :cl-journal.functions)
+  (:import-from :cl-journal.db
+                :login)
+  (:export :setup-settings
+           :get-password))
 
 (in-package :cl-journal.settings)
 
@@ -11,30 +13,21 @@ cl-journal push
 git add posts.lisp
 "))
 
+(defparameter +get-password-cmd+ "security find-internet-password -a ~a -s www.livejournal.com -w")
+
 (defun setup-dev-env ()
-  (chdir #P"/Users/dpetrov/test-drafts/")
-  (setf cl-journal.lj-api:*livejournal-login* (get-login))
-  (setf cl-journal.lj-api:*livejournal-password* (get-password cl-journal.lj-api::*livejournal-login*)))
+  (chdir #P"/Users/dpetrov/test-drafts/"))
 
-(defun get-login () (exec "git config livejournal.login"))
-
-(defun set-login ()
-  (if (not (equal "" (get-login)))
-      (progn
-        (format t "Login is already set!~%")
-        (get-login)
-        )
-      (progn
-        (let ((login (prompt-read "Login name")))
-          (exec (format nil "git config livejournal.login \"~a\"" login))
-          login
-          ))))
+(defun get-password-no-set (login)
+  (exec (format nil +get-password-cmd+ login)))
 
 (defun get-password (login)
-  (exec (format nil "security find-internet-password -a ~a -s www.livejournal.com -w" login)))
+  (let ((password (get-password-no-set login)))
+    (if (not (equal "" password)) password
+        (set-password login))))
 
 (defun set-password (login)
-  (if (not (equal "" (get-password login)))
+  (if (not (equal "" (get-password-no-set login)))
       (format t "Password is already set!~%")
       (progn
         (let ((password (prompt-read-password "Password")))
@@ -44,15 +37,15 @@ git add posts.lisp
 
 (defun setup-hook ()
   (if (y-or-n-p "Do you want to set up pre-commit hook to make posting easier?")
-    (with-open-file (out ".git/hooks/pre-commit"
-                         :direction :output
-                         :if-exists :supersede)
-      (with-standard-io-syntax
-        (format out *pre-commit-hook*)
-        (exec "chmod +x .git/hooks/pre-commit")))))
+      (if (cwd-is-git-dir-p)
+          (with-open-file (out ".git/hooks/pre-commit"
+                               :direction :output
+                               :if-exists :supersede)
+            (with-standard-io-syntax
+              (format out *pre-commit-hook*)
+              (exec "chmod +x .git/hooks/pre-commit")))
+          (format t "Cannot do! You don't have git repo in current working dir~%"))))
 
-(defun setup ()
-  (let ((login (set-login)))
-    (set-password login)
-    (setup-hook)
-    ))
+(defun setup-settings (db)
+  (set-password (login db))
+  (setup-hook))

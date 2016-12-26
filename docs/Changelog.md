@@ -2,6 +2,11 @@
 title: Changelog
 ---
 
+## Not released yet
+
+* 2016-12-26 Remove hard dependency on git, login is stored in db now
+* 2016-12-17 `journal` field for posts to publish to specific communities
+
 ## 0.2.3
 
 * 2016-12-17 `last` command to open system editor with last published file

@@ -1,9 +1,11 @@
 (in-package :cl-user)
 (defpackage cl-journal
-  (:use :cl :cl-arrows :cl-journal.lj-api :cl-journal.file-api)
-  (:import-from :cl-journal.lj-api :publish-post :update-post :delete-post)
-  (:import-from :cl-journal.db <db> <post-file> <post> :create-db-from-list :filename :title :to-list :get-by-fname :read-from-file :draft :get-modified :get-deleted :url :get-last-published-post)
+  (:use :cl :cl-arrows :cl-journal.lj-api
+        :cl-journal.settings
+        :cl-journal.db
+        :cl-journal.file-api)
   (:export :*posts*
+           :setup
            :get-draft-files
            :publish-new-files
            :publish-modified-files
@@ -24,7 +26,7 @@
 (defmethod delete-post :after ((db <db>) (post <post>))
   (save-posts))
 
-(defmethod update-post :after ((post <post>))
+(defmethod update-post :after ((db <db>) (post <post>))
   (save-posts))
 
 (defun save-posts ()
@@ -40,6 +42,12 @@
         (with-standard-io-syntax
           (setf *posts* (create-db-from-list (read in)))))))
 
+(defun setup ()
+  (if (restore-posts) (format t "db file exists, remove it to recreate~%")
+      (progn
+        (setf *posts* (create-empty-db))
+        (save-posts)))
+  (setup-settings *posts*))
 
 (defun edit-last-published-post ()
   (let ((post (get-last-published-post *posts*)))
@@ -92,7 +100,7 @@
                                   (filename post)
                                   (title post))))
               (if (y-or-n-p prompt)
-                  (update-post post)))))
+                  (update-post *posts* post)))))
         (format t "No published files were modified~%"))))
 
 (defun unpublish-deleted-files ()

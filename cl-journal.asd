@@ -26,14 +26,14 @@ This file is a part of cl-journal project.
                 :components
                 (
                  (:file "magic-ed")
-                 (:file "markdown" :depends-on ("cl-journal"))
                  (:file "functions")
-                 (:file "main" :depends-on ("settings" "lj-api" "cl-journal" "functions"))
+                 (:file "settings" :depends-on ("functions" "db"))
+                 (:file "markdown" :depends-on ("cl-journal"))
+                 (:file "main" :depends-on ("cl-journal" "functions"))
                  (:file "db" :depends-on ("functions" "file-api"))
                  (:file "file-api")
-                 (:file "settings")
-                 (:file "lj-api" :depends-on ("functions" "db"))
-                 (:file "cl-journal" :depends-on ("file-api" "lj-api"))
+                 (:file "lj-api" :depends-on ("settings" "functions" "db"))
+                 (:file "cl-journal" :depends-on ("settings" "file-api" "lj-api"))
                  )))
   :long-description
   #.(with-open-file (stream (merge-pathnames

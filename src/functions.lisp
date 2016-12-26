@@ -5,6 +5,7 @@
   (:export :get-date-struct
            :get-date-struct-str
            :cwd-is-git-dir-p
+           :cwd-has-posts-file-p
            :exec
            :prompt-read
            :prompt-read-password
@@ -42,6 +43,9 @@
 
 (defun cwd-is-git-dir-p ()
   (if (probe-file ".git") T NIL))
+
+(defun cwd-has-posts-file-p ()
+  (if (probe-file "posts.lisp") T NIL))
 
 (defun prompt-read (x)
   (format *query-io* "~a: " x)

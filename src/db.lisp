@@ -2,7 +2,9 @@
 
 (defpackage cl-journal.db
   (:use :cl :cl-arrows :s-xml-rpc)
-  (:import-from :cl-journal.functions :get-date-struct-str)
+  (:import-from :cl-journal.functions
+                :prompt-read
+                :get-date-struct-str)
   (:import-from :cl-journal.file-api :parse-post-file)
   (:import-from :alexandria :curry :compose)
   (:export :<post-file>
@@ -11,7 +13,9 @@
    :to-xmplrpc-struct
    :read-from-file
    :create-post-from-xmlrpc-struct
+   :create-empty-db
    :create-db-from-list
+   :login
    :to-list
    :get-by-fname
    :filename
@@ -175,11 +179,12 @@
               (error "Post journal has been changed after post creation! Initial value was ~a and currently it's ~a. We do not support that now, please use initial value." (journal post) (journal post-file)))))))
 
 (defclass <db> ()
-  ((posts :initarg :posts :accessor posts)))
+  ((posts :initarg :posts :accessor posts)
+   (version :initarg :version :reader version)
+   (login :initarg :login :reader login)))
 
 (defmethod print-object ((db <db>) stream)
   (format stream "<db ~a>~%" (posts db)))
-
 
 (defgeneric get-modified (db))
 
@@ -193,7 +198,9 @@
   (remove-if-not #'deleted-p (posts db)))
 
 (defmethod to-list ((db <db>))
-  (mapcar #'to-list (posts db)))
+  `(:login ,(login db)
+    :version 1
+    :posts ,(mapcar #'to-list (posts db))))
 
 (defmethod get-by-fname ((db <db>) fname)
   (find-if #'(lambda (post) (get-by-fname post fname))
@@ -202,9 +209,32 @@
 (defun get-last-published-post (db)
   (car (sort (posts db) #'> :key #'created-at)))
 
+(defun create-empty-db ()
+  (let ((login (prompt-read "Please enter you livejournal login")))
+    (when (string= "" login) (error "Cannot proceed without login"))
+    (create-db-from-list `(:login ,login
+                           :version 1
+                           :posts ()))))
+
 (defun create-db-from-list (l)
+  (cond
+    ((null (find :version l)) (create-db-from-list (migrate-db-v0-v1 l)))
+    (t (create-db-from-list-finally l))))
+
+(defun migrate-db-v0-v1 (l)
+  (format t "You've used an outdated version of client and we need to migrate data~%")
+  (let ((login (prompt-read "Please enter you livejournal login again")))
+    (when (string= "" login) (error "Cannot proceed without login"))
+    `(:login ,login
+      :version 1
+      :posts ,l)))
+
+(defun create-db-from-list-finally (l)
   (make-instance '<db>
-                 :posts (mapcar #'create-post-from-list l)))
+                 :version (getf l :version)
+                 :login (getf l :login)
+                 :posts (mapcar #'create-post-from-list
+                                (getf l :posts))))
 
 (defun add-props (plist)
   (let* ((file-fields (list :music :mood :location :tags))

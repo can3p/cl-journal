@@ -1,7 +1,9 @@
 (in-package :cl-user)
 (defpackage cl-journal.main
-  (:use :cl :cl-journal :cl-journal.settings :cl-journal.lj-api)
-  (:import-from :cl-journal.functions :exec :cwd-is-git-dir-p)
+  (:use :cl :cl-journal)
+  (:import-from :cl-journal.functions
+                :cwd-has-posts-file-p
+                )
   (:export :main))
 
 (in-package :cl-journal.main)
@@ -39,22 +41,15 @@ Commands:
   (apply #'main-entry (cdr args)))
 
 (defun main-entry (&optional (command "help") (arg ()))
-  (if (cwd-is-git-dir-p)
+  (if (or (cwd-has-posts-file-p) (equal command "init"))
       (cond
         ((equal command "init") (setup))
-        ((equal command "push") (let* ((*livejournal-login* (get-login))
-                                      (*livejournal-password* (get-password *livejournal-login*)))
-                                 (if (or (equal "" *livejournal-login*)
-                                         (equal "" *livejournal-password*)
-                                         )
-                                     (format t "Setup is not complete! Run cl-journal init from this folder")
-                                     (progn
-                                       (restore-posts)
-                                       (publish-new-files)
-                                       (publish-modified-files)
-                                       (unpublish-deleted-files)
-                                       )
-                                     )))
+        ((equal command "push") (progn
+                                  (restore-posts)
+                                  (publish-new-files)
+                                  (publish-modified-files)
+                                  (unpublish-deleted-files)
+                                  ))
         ((equal command "url") (if arg
                                    (progn
                                      (restore-posts)
@@ -71,6 +66,6 @@ Commands:
                                     (edit-last-published-post)))
         (t (help)))
       (progn
-        (format t "Please run this command from top level directory in the git repo~%~%")
+        (format t "Please run this command from top level directory of your journal (it's where db file is located)~%~%")
         (help)
         )))
