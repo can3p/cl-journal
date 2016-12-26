@@ -20,6 +20,7 @@ This file is a part of cl-journal project.
                #:alexandria
                #:cl-arrows
                #:cl-markdown
+               #:split-sequence
                #+sbcl :sb-introspect
                )
   :components ((:module "src"

@@ -62,8 +62,10 @@ Commands:
                                     (restore-posts)
                                     (format t "~{~a~%~}" (get-draft-files))))
         ((equal command "last") (progn
-                                    (restore-posts)
-                                    (edit-last-published-post)))
+                                  (restore-posts)
+                                  (edit-last-published-post)))
+        ((equal command "new") (progn
+                                    (edit-new-post arg)))
         (t (help)))
       (progn
         (format t "Please run this command from top level directory of your journal (it's where db file is located)~%~%")

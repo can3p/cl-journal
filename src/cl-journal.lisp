@@ -1,8 +1,11 @@
 (in-package :cl-user)
 (defpackage cl-journal
-  (:use :cl :cl-arrows :cl-journal.lj-api
+  (:use :cl :cl-arrows
+        :split-sequence
+        :cl-journal.lj-api
         :cl-journal.settings
         :cl-journal.db
+        :cl-journal.functions
         :cl-journal.file-api)
   (:export :*posts*
            :setup
@@ -12,6 +15,7 @@
            :unpublish-deleted-files
            :restore-posts
            :lookup-file-url
+           :edit-new-post
            :edit-last-published-post))
 
 (in-package :cl-journal)
@@ -48,6 +52,20 @@
         (setf *posts* (create-empty-db))
         (save-posts)))
   (setup-settings *posts*))
+
+(defun edit-new-post (name)
+  (let* ((parts (reverse (split-sequence #\/ name)))
+         (name (car parts))
+         (rest (reverse (cdr parts)))
+         (date (get-date-struct))
+         (filename (format nil "~{~a/~}~a-~2,'0d-~2,'0d-~a.md"
+                           rest
+                           (getf date :year)
+                           (getf date :mon)
+                           (getf date :day)
+                           name
+                           )))
+    (magic-ed:magic-ed filename :eval nil)))
 
 (defun edit-last-published-post ()
   (let ((post (get-last-published-post *posts*)))
