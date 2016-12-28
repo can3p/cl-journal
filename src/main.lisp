@@ -30,6 +30,10 @@ Commands:
     drafts
         Display the list with filenames of all drafts
 
+    new <name>
+        Open editor to edit a file like yyyy-mm-dd-<name>.md, where the date
+        is a current date. if name has slashes like a/name file a/yyyy-mm-dd-name.md
+        will be opened
     last
         Open editor to edit last published post
 
