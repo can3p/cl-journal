@@ -6,6 +6,10 @@ title: Changelog
 
 * Nothing
 
+## 0.3.2
+
+* 2017-04-05 `drafts` command is removed in favor of new `status` command that provides full information about local changes.
+
 ## 0.3.1
 
 * fix typos that prevented `push` from working correctly

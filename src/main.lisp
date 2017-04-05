@@ -27,8 +27,9 @@ Commands:
         Find new posts and publish them. Drafts will be skipped client
         will prompt before publishing every file.
 
-    drafts
-        Display the list with filenames of all drafts
+    status
+        Display the list with filenames of all drafts or files that
+        are out of sync with blog service.
 
     new <name>
         Open editor to edit a file like yyyy-mm-dd-<name>.md, where the date
@@ -62,9 +63,9 @@ Commands:
                                            (format t "~a~%" url)
                                            (format t "File is not published~%"))))
                                    (format t "Please specify filename to lookup~%")))
-        ((equal command "drafts") (progn
-                                    (restore-posts)
-                                    (format t "~{~a~%~}" (get-draft-files))))
+        ((equal command "status") (progn
+                                  (restore-posts)
+                                  (print-status)))
         ((equal command "last") (progn
                                   (restore-posts)
                                   (edit-last-published-post)))

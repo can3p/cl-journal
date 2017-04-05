@@ -9,13 +9,13 @@
         :cl-journal.file-api)
   (:export :*posts*
            :setup
-           :get-draft-files
            :publish-new-files
            :publish-modified-files
            :unpublish-deleted-files
            :restore-posts
            :lookup-file-url
            :edit-new-post
+           :print-status
            :edit-last-published-post))
 
 (in-package :cl-journal)
@@ -91,47 +91,78 @@
   (let ((obj (get-by-fname *posts* fname)))
     (when obj (url obj))))
 
+(defmacro with-files (name accessor multiplemsg singlemsg nomsg)
+  (let ((fn-name (intern
+                  (concatenate 'string
+                               "WITH-"
+                               (symbol-name name)
+                               "-FILES"))))
+    `(defun ,fn-name (cb)
+       (let ((items ,accessor))
+         (if (> (length items) 0)
+             (progn
+               (if (> (length items) 1)
+                   (format t ,multiplemsg (length items))
+                   (format t ,singlemsg))
+               (funcall cb items))
+             (format t ,nomsg))))))
+
+(with-files new (get-new-files)
+  "There are ~a new files to publish~%"
+  "There is a new file to publish~%"
+  "No new files to publish~%")
+
+(with-files modified (get-modified *posts*)
+  "There are ~a modified files to update~%"
+  "There a modified file to update~%"
+  "No published files were modified~%")
+
+(with-files deleted (get-deleted *posts*)
+  "There are ~a deleted files to unpublish~%"
+  "There is a deleted file to unpublish~%"
+  "No published files were deleted~%")
+
+(with-files draft (get-draft-files)
+  "There are ~a drafts files~%"
+  "There a drafts file~%"
+  "No drafts found~%")
+
+;; some duplication is still there, right?
+(defun print-status ()
+  (flet ((print-names (items)
+           (format t "~%~{    ~a~^~%~}~%~%" (mapcar #'filename items)))
+         (print-string-names (items)
+           (format t "~%~{    ~a~^~%~}~%~%" items))
+         )
+    (with-draft-files #'print-string-names)
+    (with-new-files #'print-names)
+    (with-modified-files #'print-names)
+    (with-deleted-files #'print-names)))
+
+;; and there, yeah
 (defun publish-new-files ()
-  (let ((new (get-new-files)))
-    (if (> (length new) 0)
-        (progn
-          (if (> (length new) 1)
-              (format t "There are ~a new files to publish~%" (length new))
-              (format t "There a new file to publish~%"))
-          (loop for post in new do
-            (let ((prompt (format nil "Filename: ~a~%Title: ~a~%~%Publish this file?"
-                                  (filename post)
-                                  (title post))))
-              (if (y-or-n-p prompt)
-                  (publish-post *posts* post)))))
-        (format t "No new files to publish~%"))))
+  (with-new-files #'(lambda (items)
+                      (loop for post in items do
+                        (let ((prompt (format nil "Filename: ~a~%Title: ~a~%~%Publish this file?"
+                                              (filename post)
+                                              (title post))))
+                          (if (y-or-n-p prompt)
+                              (publish-post *posts* post)))))))
 
 (defun publish-modified-files ()
-  (let ((modified (get-modified *posts*)))
-    (if (> (length modified) 0)
-        (progn
-          (if (> (length modified) 1)
-              (format t "There are ~a modified files to update~%" (length modified))
-              (format t "There a modified file to update~%"))
-          (loop for post in modified do
-            (let ((prompt (format nil "Filename: ~a~%Title: ~a~%~%Upload updated version of this file?"
-                                  (filename post)
-                                  (title post))))
-              (if (y-or-n-p prompt)
-                  (update-post *posts* post)))))
-        (format t "No published files were modified~%"))))
+  (with-modified-files #'(lambda (items)
+                           (loop for post in items do
+                             (let ((prompt (format nil "Filename: ~a~%Title: ~a~%~%Upload updated version of this file?"
+                                                   (filename post)
+                                                   (title post))))
+                               (if (y-or-n-p prompt)
+                                   (update-post *posts* post)))))))
 
 (defun unpublish-deleted-files ()
-  (let ((deleted (get-deleted *posts*)))
-    (if (> (length deleted) 0)
-        (progn
-          (if (> (length deleted) 1)
-              (format t "There are ~a deleted files to unpublish~%" (length deleted))
-              (format t "There a deleted file to unpublish~%"))
-          (loop for post in deleted do
-            (let ((prompt (format nil "Filename: ~a~%Url: ~a~%~%Unpublish this file?"
-                                  (filename post)
-                                  (cl-journal.db:url post))))
-              (if (y-or-n-p prompt)
-                  (delete-post *posts* post)))))
-        (format t "No published files were deleted~%"))))
+  (with-deleted-files #'(lambda (items)
+                          (loop for post in items do
+                            (let ((prompt (format nil "Filename: ~a~%Url: ~a~%~%Unpublish this file?"
+                                                  (filename post)
+                                                  (cl-journal.db:url post))))
+                              (if (y-or-n-p prompt)
+                                  (delete-post *posts* post)))))))
