@@ -1,6 +1,13 @@
+(in-package :rpc4cl)
+
+;; monkey patch encode string to send properly encoded strings
+(defun encode-string (string)
+  (with-output-to-string (s)
+    (s-xml:print-string-xml string s)))
+
 (in-package :cl-user)
 (defpackage cl-journal.lj-api
-  (:use :cl :s-xml-rpc)
+  (:use :cl :cl-arrows)
   (:import-from :cl-journal.functions :get-date-struct)
   (:import-from :alexandria :compose)
   (:import-from :cl-journal.settings
@@ -28,6 +35,10 @@
 (defvar *livejournal-login* nil)
 (defvar *livejournal-password* nil)
 
+(defun rpc-call (method &rest method-parameters)
+  (apply #'rpc4cl:rpc-call "http://www.livejournal.com/interface/xmlrpc"
+         nil nil method method-parameters))
+
 (defun hash (str)
   (string-downcase (format nil "~{~2,'0x~}"
                            (coerce (md5:md5sum-string str)
@@ -35,11 +46,9 @@
 
 
 (defun getchallenge ()
-  (s-xml-rpc:get-xml-rpc-struct-member
-   (s-xml-rpc:xml-rpc-call (s-xml-rpc:encode-xml-rpc-call "LJ.XMLRPC.getchallenge")
-                           :url "/interface/xmlrpc"
-                           :host "www.livejournal.com")
-   :|challenge|))
+  (->
+   (rpc-call "LJ.XMLRPC.getchallenge")
+   (getf :challenge)))
 
 (defun add-challenge (&optional (req nil))
   (let* ((challenge (getchallenge))
@@ -48,10 +57,10 @@
                                            (hash *livejournal-password*)))))
     (concatenate 'list
                  req
-                 (list "username" *livejournal-login*
-                       "auth_method" "challenge"
-                       "auth_challenge" challenge
-                       "auth_response" auth-response))))
+                 (list :username *livejournal-login*
+                       :auth_method "challenge"
+                       :auth_challenge challenge
+                       :auth_response auth-response))))
 
 ;; (defun login ()
 ;;   (let* ((struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge)))
@@ -63,42 +72,24 @@
 (defgeneric create-new-post (post))
 
 (defmethod create-new-post ((post <post-file>))
-  (let* ((request (s-xml-rpc:encode-xml-rpc-call
-                   "LJ.XMLRPC.postevent"
-                   (to-xmlrpc-struct post #'add-challenge)))
-         (response (s-xml-rpc:xml-rpc-call request
-                                           :url "/interface/xmlrpc"
-                                           :host "www.livejournal.com"))
-         )
-
-    (create-post-from-xmlrpc-struct response (filename post) (journal post))))
+  (let* ((response (rpc-call "LJ.XMLRPC.postevent"
+                             (to-xmlrpc-struct post #'add-challenge))))
+    (create-post-from-xmlrpc-struct response
+                                    (filename post)
+                                    (journal post))))
 
 
 (defgeneric delete-old-post (post))
 
 (defmethod delete-old-post ((post <post>))
-  (let* ((request (s-xml-rpc:encode-xml-rpc-call
-                   "LJ.XMLRPC.editevent"
-                   (to-xmlrpc-struct post #'add-challenge t)))
-         (response (s-xml-rpc:xml-rpc-call request
-                                           :url "/interface/xmlrpc"
-                                           :host "www.livejournal.com"))
-         )
-
-    response))
+  (rpc-call "LJ.XMLRPC.editevent"
+            (to-xmlrpc-struct post #'add-challenge t)))
 
 (defgeneric update-old-post (post))
 
 (defmethod update-old-post ((post <post>))
-  (let* ((request (s-xml-rpc:encode-xml-rpc-call
-                   "LJ.XMLRPC.editevent"
-                   (to-xmlrpc-struct post #'add-challenge)))
-         (response (s-xml-rpc:xml-rpc-call request
-                                           :url "/interface/xmlrpc"
-                                           :host "www.livejournal.com"))
-         )
-
-    response))
+  (rpc-call "LJ.XMLRPC.editevent"
+            (to-xmlrpc-struct post #'add-challenge)))
 
 (defun set-credentials (db)
   (when (or (not (string= (login db) *livejournal-login*))

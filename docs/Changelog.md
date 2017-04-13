@@ -4,7 +4,7 @@ title: Changelog
 
 ## Not released yet
 
-* Nothing
+* 2017-04-14 Switch from s-xml-rpc to rpc4cl to get https support
 
 ## 0.3.2
 

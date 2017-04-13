@@ -1,10 +1,10 @@
 (in-package :cl-user)
 
 (defpackage cl-journal.db
-  (:use :cl :cl-arrows :s-xml-rpc)
+  (:use :cl :cl-arrows)
   (:import-from :cl-journal.functions
                 :prompt-read
-                :get-date-struct-str)
+                :get-date-struct)
   (:import-from :cl-journal.file-api :parse-post-file)
   (:import-from :alexandria :curry :compose)
   (:export :<post-file>
@@ -32,9 +32,6 @@
 (in-package :cl-journal.db)
 
 (defvar *add-date-ts* nil)
-
-(defun xmember (struct member)
-  (s-xml-rpc:get-xml-rpc-struct-member struct member))
 
 (defclass <post-file> ()
   (
@@ -64,9 +61,9 @@
 
 (defmethod to-event-list ((post <post-file>) &optional (transform #'identity))
   (let ((l (list
-            "event" (body post)
-            "subject" (title post)
-            "props" (add-props (fields post))
+            :event (body post)
+            :subject (title post)
+            :props (add-props (fields post))
             )))
     (-<> l
          (add-privacy-fields (privacy post))
@@ -76,10 +73,7 @@
 
 (defmethod to-xmlrpc-struct ((post <post-file>) &optional (transform #'identity) (is-deleted nil))
   (declare (ignore is-deleted))
-  (let ((l (to-event-list post transform)))
-    (setf (getf l "props")
-          (apply #'s-xml-rpc:xml-rpc-struct (getf l "props")))
-    (apply #'s-xml-rpc:xml-rpc-struct l)))
+  (to-event-list post transform))
 
 (defclass <post> ()
   (
@@ -123,10 +117,10 @@
 
 (defun create-post-from-xmlrpc-struct (struct fname journal)
   (make-instance '<post>
-                 :itemid (xmember struct :|itemid|)
-                 :anum (xmember struct :|anum|)
-                 :ditemid (xmember struct :|ditemid|)
-                 :url (xmember struct :|url|)
+                 :itemid (getf struct :itemid)
+                 :anum (getf struct :anum)
+                 :ditemid (getf struct :ditemid)
+                 :url (getf struct :url)
                  :filename fname
                  :journal journal
                  ))
@@ -160,17 +154,16 @@
 (defun add-itemid (post req)
   (concatenate 'list
                req
-               (list "itemid" (itemid post))))
+               (list :itemid (itemid post))))
 
 (defmethod to-xmlrpc-struct ((post <post>) &optional (transform #'identity) (is-deleted nil))
   (let ((*add-date-ts* (created-at post)))
     (if is-deleted
-        (apply #'s-xml-rpc:xml-rpc-struct
-               (funcall (compose #'add-date
-                                 transform
-                                 (curry #'add-usejournal (journal post))
-                                 (curry #'add-itemid post))
-                        '("event" "" "subject" "")))
+        (funcall (compose #'add-date
+                          transform
+                          (curry #'add-usejournal (journal post))
+                          (curry #'add-itemid post))
+                 '(:event "" :subject ""))
         (let ((post-file (read-from-file (filename post))))
           (if (string= (journal post-file) (journal post))
               (to-xmlrpc-struct post-file
@@ -238,7 +231,7 @@
 
 (defun add-props (plist)
   (let* ((file-fields (list :music :mood :location :tags))
-         (lj-fields (list "current_music" "current_mood" "current_location" "taglist"))
+         (lj-fields (list :current_music :current_mood :current_location :taglist))
          (props (mapcar #'(lambda (field lj-field)
                             (if (getf plist field)
                                 (list lj-field (getf plist field)) ()))
@@ -255,19 +248,19 @@
     (if (string= privacy "friends")
         (concatenate 'list
                      plist
-                     (list "security" lj-privacy "allowmask" 1))
+                     (list :security lj-privacy :allowmask 1))
         (concatenate 'list
                      plist
-                     (list "security" lj-privacy)))))
+                     (list :security lj-privacy)))))
 
 (defun add-date (plist &optional (ts *add-date-ts*))
   (concatenate 'list
                plist
-               (get-date-struct-str ts)))
+               (get-date-struct ts)))
 
 (defun add-usejournal (journal plist)
   (if (not (null journal))
       (concatenate 'list
                    plist
-                   (list "usejournal" journal))
+                   (list :usejournal journal))
       plist))

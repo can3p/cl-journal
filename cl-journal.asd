@@ -14,7 +14,8 @@ This file is a part of cl-journal project.
   :license "Public Domain"
   :homepage "https://github.com/can3p/cl-journal"
   :source-control "https://github.com/can3p/cl-journal"
-  :depends-on (#:s-xml-rpc
+  :depends-on (#:rpc4cl
+               #:s-xml
                #:md5
                #:uiop
                #:alexandria
