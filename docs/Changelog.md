@@ -4,6 +4,7 @@ title: Changelog
 
 ## Not released yet
 
+* 2017-04-20 Initial dreamwidth support
 * 2017-04-20 Fix api crash when badly structured props field is passed
 * 2017-04-14 Switch from s-xml-rpc to rpc4cl to get https support
 

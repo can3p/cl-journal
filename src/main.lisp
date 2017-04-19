@@ -19,9 +19,14 @@ Usage:
 cl-journal [command]
 
 Commands:
-    init
+    init [service]
         Setup up a directory. Setup will ask for login name and password.
         Password will be stored in a default Mac OS X keychain.
+
+        Optionally a service name can be passed. Currently only
+        livejournal and dreamwidth are supported, but any other
+        service name will be treated as an xml-rpc endpoint
+        to be used. Default is livejournal
 
     push
         Find new posts and publish them. Drafts will be skipped client
@@ -48,7 +53,8 @@ Commands:
 (defun main-entry (&optional (command "help") (arg ()))
   (if (or (cwd-has-posts-file-p) (equal command "init"))
       (cond
-        ((equal command "init") (setup))
+        ((equal command "init") (setup (string-downcase
+                                        (or arg "livejournal"))))
         ((equal command "push") (progn
                                   (restore-posts)
                                   (publish-new-files)

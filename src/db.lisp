@@ -16,6 +16,7 @@
    :create-empty-db
    :create-db-from-list
    :login
+   :service-endpoint
    :to-list
    :get-by-fname
    :filename
@@ -32,6 +33,20 @@
 (in-package :cl-journal.db)
 
 (defvar *add-date-ts* nil)
+(defvar *default-service* :livejournal)
+
+(defun resolve-service-name (service)
+  (cond
+    ((string= service "livejournal") :livejournal)
+    ((string= service "dreamwidth") :dreamwidth)
+    ((string= service "t") :manual)
+    ))
+
+(defun resolve-service-endpoint (service)
+  (case service
+    (:livejournal "http://www.livejournal.com/interface/xmlrpc")
+    (:dreamwidth  "https://www.dreamwidth.org/interface/xmlrpc")
+    (otherwise service)))
 
 (defclass <post-file> ()
   (
@@ -174,7 +189,9 @@
 (defclass <db> ()
   ((posts :initarg :posts :accessor posts)
    (version :initarg :version :reader version)
-   (login :initarg :login :reader login)))
+   (login :initarg :login :reader login)
+   (service :initarg :service :reader service)
+   (service-endpoint :initarg :service-endpoint :reader service-endpoint)))
 
 (defmethod print-object ((db <db>) stream)
   (format stream "<db ~a>~%" (posts db)))
@@ -192,7 +209,9 @@
 
 (defmethod to-list ((db <db>))
   `(:login ,(login db)
-    :version 1
+    :version 2
+    :service ,(service db)
+    :service-endpoint ,(service-endpoint db)
     :posts ,(mapcar #'to-list (posts db))))
 
 (defmethod get-by-fname ((db <db>) fname)
@@ -202,16 +221,21 @@
 (defun get-last-published-post (db)
   (car (sort (posts db) #'> :key #'created-at)))
 
-(defun create-empty-db ()
-  (let ((login (prompt-read "Please enter you livejournal login")))
+(defun create-empty-db (service-name)
+  (let ((login (prompt-read "Please enter you livejournal login"))
+        (service (resolve-service-name service-name)))
     (when (string= "" login) (error "Cannot proceed without login"))
     (create-db-from-list `(:login ,login
                            :version 1
+                           :service ,service
+                           :service-endpoint ,(resolve-service-endpoint
+                                              service)
                            :posts ()))))
 
 (defun create-db-from-list (l)
   (cond
     ((null (find :version l)) (create-db-from-list (migrate-db-v0-v1 l)))
+    ((null (find :service l)) (create-db-from-list (migrate-db-v1-v2 l)))
     (t (create-db-from-list-finally l))))
 
 (defun migrate-db-v0-v1 (l)
@@ -222,10 +246,20 @@
       :version 1
       :posts ,l)))
 
+(defun migrate-db-v1-v2 (l)
+  (format t "You've used an outdated version of client and we need to migrate data~%")
+  (concatenate 'list l
+               (list
+                :service *default-service*
+                :service-endpoint (resolve-service-endpoint
+                                   *default-service*))))
+
 (defun create-db-from-list-finally (l)
   (make-instance '<db>
                  :version (getf l :version)
                  :login (getf l :login)
+                 :service (getf l :service)
+                 :service-endpoint (getf l :service-endpoint)
                  :posts (mapcar #'create-post-from-list
                                 (getf l :posts))))
 

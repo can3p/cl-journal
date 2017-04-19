@@ -19,6 +19,7 @@
    :<post>
    :<db>
    :login
+   :service-endpoint
    :read-from-file
    :create-post-from-xmlrpc-struct
    :filename
@@ -32,11 +33,12 @@
 
 (in-package :cl-journal.lj-api)
 
-(defvar *livejournal-login* nil)
-(defvar *livejournal-password* nil)
+(defvar *service-login* nil)
+(defvar *service-password* nil)
+(defvar *service-endpoint* nil)
 
 (defun rpc-call (method &rest method-parameters)
-  (apply #'rpc4cl:rpc-call "http://www.livejournal.com/interface/xmlrpc"
+  (apply #'rpc4cl:rpc-call *service-endpoint*
          nil nil method method-parameters))
 
 (defun hash (str)
@@ -54,10 +56,10 @@
   (let* ((challenge (getchallenge))
          (auth-response (hash (concatenate 'string
                                            challenge
-                                           (hash *livejournal-password*)))))
+                                           (hash *service-password*)))))
     (concatenate 'list
                  req
-                 (list :username *livejournal-login*
+                 (list :username *service-login*
                        :auth_method "challenge"
                        :auth_challenge challenge
                        :auth_response auth-response))))
@@ -92,10 +94,12 @@
             (to-xmlrpc-struct post #'add-challenge)))
 
 (defun set-credentials (db)
-  (when (or (not (string= (login db) *livejournal-login*))
-          (string= "" *livejournal-password*))
-      (setf *livejournal-login* (login db))
-      (setf *livejournal-password* (get-password (login db)))))
+  (when (or (not (string= (login db) *service-login*))
+            (not (string= (service-endpoint db) *service-endpoint*))
+          (string= "" *service-password*))
+    (setf *service-endpoint* (service-endpoint db))
+    (setf *service-login* (login db))
+    (setf *service-password* (get-password (login db)))))
 
 
 (defgeneric publish-post (db post))

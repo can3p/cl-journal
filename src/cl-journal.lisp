@@ -46,10 +46,10 @@
         (with-standard-io-syntax
           (setf *posts* (create-db-from-list (read in)))))))
 
-(defun setup ()
+(defun setup (service)
   (if (restore-posts) (format t "db file exists, remove it to recreate~%")
       (progn
-        (setf *posts* (create-empty-db))
+        (setf *posts* (create-empty-db service))
         (save-posts)))
   (setup-settings *posts*))
 
