@@ -63,9 +63,9 @@
   (let ((l (list
             :event (body post)
             :subject (title post)
-            :props (add-props (fields post))
             )))
     (-<> l
+         (add-props (fields post))
          (add-privacy-fields (privacy post))
          (add-usejournal (journal post) <>)
          (add-date)
@@ -229,14 +229,19 @@
                  :posts (mapcar #'create-post-from-list
                                 (getf l :posts))))
 
-(defun add-props (plist)
+(defun add-props (plist props-plist)
   (let* ((file-fields (list :music :mood :location :tags))
          (lj-fields (list :current_music :current_mood :current_location :taglist))
          (props (mapcar #'(lambda (field lj-field)
-                            (if (getf plist field)
-                                (list lj-field (getf plist field)) ()))
-                        file-fields lj-fields)))
-    (apply #'concatenate 'list props)))
+                            (if (getf props-plist field)
+                                (list lj-field (getf props-plist field)) ()))
+                        file-fields lj-fields))
+         (props-list (apply #'concatenate 'list props)))
+    (if (not (null props-list))
+        (concatenate 'list
+                     plist
+                     (list :props props-list))
+        plist)))
 
 (defun add-privacy-fields (plist privacy)
   (let ((lj-privacy (cond
