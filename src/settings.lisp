@@ -2,6 +2,8 @@
 (defpackage cl-journal.settings
   (:use :cl :cl-journal.functions)
   (:import-from :cl-journal.db
+                :url
+                :service-url
                 :login)
   (:export :setup-settings
            :get-password))
@@ -13,25 +15,25 @@ cl-journal push
 git add posts.lisp
 "))
 
-(defparameter +get-password-cmd+ "security find-internet-password -a ~a -s www.livejournal.com -w")
+(defparameter +get-password-cmd+ "security find-internet-password -a ~a -s ~a -w")
 
 (defun setup-dev-env ()
   (chdir #P"/Users/dpetrov/test-drafts/"))
 
-(defun get-password-no-set (login)
-  (exec (format nil +get-password-cmd+ login)))
+(defun get-password-no-set (login url)
+  (exec (format nil +get-password-cmd+ login url)))
 
-(defun get-password (login)
-  (let ((password (get-password-no-set login)))
+(defun get-password (login url)
+  (let ((password (get-password-no-set login url)))
     (if (not (equal "" password)) password
-        (set-password login))))
+        (set-password login url))))
 
-(defun set-password (login)
-  (if (not (equal "" (get-password-no-set login)))
+(defun set-password (login url)
+  (if (not (equal "" (get-password-no-set login url)))
       (format t "Password is already set!~%")
       (progn
         (let ((password (prompt-read-password "Password")))
-          (exec (format nil "security add-internet-password -a ~a -s www.livejournal.com -w '~A'" login password))
+          (exec (format nil "security add-internet-password -a ~a -s ~a -w '~A'" login url password))
           login
           ))))
 
@@ -47,5 +49,5 @@ git add posts.lisp
           (format t "Cannot do! You don't have git repo in current working dir~%"))))
 
 (defun setup-settings (db)
-  (set-password (login db))
+  (set-password (login db) (service-url db))
   (setup-hook))

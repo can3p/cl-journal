@@ -17,6 +17,7 @@
    :create-db-from-list
    :login
    :service-endpoint
+   :service-url
    :to-list
    :get-by-fname
    :filename
@@ -47,6 +48,12 @@
     (:livejournal "http://www.livejournal.com/interface/xmlrpc")
     (:dreamwidth  "https://www.dreamwidth.org/interface/xmlrpc")
     (otherwise service)))
+
+(defun service-url (db)
+  (case (service db)
+    (:livejournal "www.livejournal.com")
+    (:dreamwidth  "www.dreamwidth.org")
+    (otherwise (service-endpoint db))))
 
 (defclass <post-file> ()
   (
@@ -222,7 +229,7 @@
   (car (sort (posts db) #'> :key #'created-at)))
 
 (defun create-empty-db (service-name)
-  (let ((login (prompt-read "Please enter you livejournal login"))
+  (let ((login (prompt-read "Please enter you login"))
         (service (resolve-service-name service-name)))
     (when (string= "" login) (error "Cannot proceed without login"))
     (create-db-from-list `(:login ,login
@@ -240,7 +247,7 @@
 
 (defun migrate-db-v0-v1 (l)
   (format t "You've used an outdated version of client and we need to migrate data~%")
-  (let ((login (prompt-read "Please enter you livejournal login again")))
+  (let ((login (prompt-read "Please enter you login again")))
     (when (string= "" login) (error "Cannot proceed without login"))
     `(:login ,login
       :version 1

@@ -19,6 +19,7 @@
    :<post>
    :<db>
    :login
+   :service-url
    :service-endpoint
    :read-from-file
    :create-post-from-xmlrpc-struct
@@ -64,13 +65,6 @@
                        :auth_challenge challenge
                        :auth_response auth-response))))
 
-;; (defun login ()
-;;   (let* ((struct (apply #'s-xml-rpc:xml-rpc-struct (add-challenge)))
-;;          (request (s-xml-rpc:encode-xml-rpc-call "LJ.XMLRPC.login" struct)))
-;;     (s-xml-rpc:xml-rpc-call request
-;;                             :url "/interface/xmlrpc"
-;;                             :host "www.livejournal.com")))
-
 (defgeneric create-new-post (post))
 
 (defmethod create-new-post ((post <post-file>))
@@ -99,8 +93,7 @@
           (string= "" *service-password*))
     (setf *service-endpoint* (service-endpoint db))
     (setf *service-login* (login db))
-    (setf *service-password* (get-password (login db)))))
-
+    (setf *service-password* (get-password (login db) (service-url db)))))
 
 (defgeneric publish-post (db post))
 

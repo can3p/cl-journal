@@ -1,4 +1,4 @@
-# Livejournal.com client written in common lisp
+# Livejournal.com / Dreamwidth.org client written in common lisp
 
 The general idea is that I don't wont to write my posts in any web interface,
 vim is just fine for these purposes! Moreover, the best workflow would by
@@ -54,7 +54,7 @@ This list is not structured in a particular order
 
 * reposts
 * preview
-* backwards sync to get updates from the livejournal.com
+* backwards sync to get updates from the service
 * photo upload functionality
 
 ## License

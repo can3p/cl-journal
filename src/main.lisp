@@ -10,7 +10,7 @@
 
 (defun help ()
   (format t "~&
-Livejournal client written in Common Lisp. Version: ~a
+Livejournal/Dreamwidth client written in Common Lisp. Version: ~a
 
 Please run all commands in a top level directory of your git repo.
 Right now client is supposed to work on Mac OS X only.
