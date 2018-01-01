@@ -4,6 +4,10 @@ title: Changelog
 
 ## Not released yet
 
+## 0.4.1
+
+* 2018-01-02 Support filename to post url conversion in reference links
+
 ## 0.4.0
 
 * 2017-06-10 Make code less livejournal specific, allow to store different passwords per service
