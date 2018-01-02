@@ -4,6 +4,9 @@ cl-journal is a file-based command line client for Livejournal.com blogging
 service and it's compatible clones like Dreamwidth.org. Every post is simply
 yet another markdown file with some fields on the top.
 
+WARNING: last version doesn't build with sbcl 1.4.3 due to some broken
+dependencies. Sorry.
+
 ## Why?
 
 The general idea is that I don't wont to write my posts in any web interface,
