@@ -6,8 +6,8 @@ title: Changelog
 
 ## 0.5.0
 
-* Linux support!
-* `ignore-all` command. cl-journal relies on file timestamp to understand
+* 2018-02-03 Linux support!
+* 2018-02-03 `ignore-all` command. cl-journal relies on file timestamp to understand
   whether it was modified since the last sync. In case timestamp was
   modified but actual change did not happen, this command will help
   to calm cl-journal down and make him treat all posts as updated.
