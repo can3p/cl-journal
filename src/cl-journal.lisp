@@ -16,6 +16,7 @@
            :lookup-file-url
            :edit-new-post
            :print-status
+           :ignore-all
            :edit-last-published-post))
 
 (in-package :cl-journal)
@@ -138,6 +139,12 @@
     (with-new-files #'print-names)
     (with-modified-files #'print-names)
     (with-deleted-files #'print-names)))
+
+(defun ignore-all ()
+  (let ((ts (get-universal-time)))
+    (loop for post in (posts *posts*) do
+          (setf (ignored-at post) ts))
+    (save-posts)))
 
 ;; and there, yeah
 (defun publish-new-files ()

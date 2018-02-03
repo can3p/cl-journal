@@ -24,9 +24,11 @@
    :title
    :journal
    :url
+   :posts
    :get-modified
    :get-deleted
    :updated-at
+   :ignored-at
    :get-last-published-post
    :draft)
   )
@@ -101,6 +103,7 @@
   (
    (updated-at :initarg :updated-at :initform (get-universal-time) :accessor updated-at)
    (created-at :initarg :created-at :initform (get-universal-time) :reader created-at)
+   (ignored-at :initarg :ignored-at :initform nil :accessor ignored-at)
    (filename :initarg :filename :reader filename)
    (journal :initarg :journal :initform nil :reader journal)
    (itemid :initarg :itemid :reader itemid)
@@ -129,7 +132,7 @@
   (let ((fname (filename post)))
     (and
      (probe-file fname)
-     (< (or (updated-at post) (created-at post))
+     (< (or (ignored-at post) (updated-at post) (created-at post))
         (file-write-date fname)))))
 
 (defgeneric deleted-p (post))
@@ -155,6 +158,7 @@
                  :url (getf plist :url)
                  :created-at (getf plist :created-at)
                  :updated-at (getf plist :updated-at)
+                 :ignored-at (getf plist :ignored-at)
                  :filename (getf plist :filename)
                  :journal (getf plist :journal)
                  ))
@@ -169,6 +173,7 @@
    :url (url post)
    :created-at (created-at post)
    :updated-at (updated-at post)
+   :ignored-at (ignored-at post)
    :filename (filename post)
    :journal (journal post)
    ))

@@ -35,6 +35,11 @@ Commands:
         Display the list with filenames of all drafts or files that
         are out of sync with blog service.
 
+    ignore-all
+        Sometimes timestamps on files go out of sync with database and
+        no real update is necessary. This command will update database
+        to treat all posts as up to date
+
     new <name>
         Open editor to edit a file like yyyy-mm-dd-<name>.md, where the date
         is a current date. if name has slashes like a/name file a/yyyy-mm-dd-name.md
@@ -71,6 +76,9 @@ Commands:
         ((equal command "status") (progn
                                   (restore-posts)
                                   (print-status)))
+        ((equal command "ignore-all") (progn
+                                  (restore-posts)
+                                  (ignore-all)))
         ((equal command "last") (progn
                                   (restore-posts)
                                   (edit-last-published-post)))
