@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+* Linux support!
+
 ## 0.4.1
 
 * 2018-01-02 Support filename to post url conversion in reference links

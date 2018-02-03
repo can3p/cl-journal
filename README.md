@@ -9,8 +9,6 @@ Any file structure can be used, client will pick up any markdown files it can fi
 
 At the moment only post creation is rudimentary supported.
 
-Due to password storage only Mac OS X is supported at the moment.
-
 ## Features
 
 * Create posts as simple markdown files
@@ -19,7 +17,23 @@ Due to password storage only Mac OS X is supported at the moment.
 * Update/removal of posts is supported when relevant file is modified/removed
 * Optional git pre-commit hook to publish posts
 
-## Install
+## Install (Linux)
+
+Guide was written based on Ubuntu linux, however there is nothing particularly
+specific there apart from tools being used to download dependencies.
+
+First of all cl-journal needs to store passwords somewhere, let's use secret-tools
+for this.
+
+`sudo apt-get install libsecret-tools`
+
+After this we need roswell, you can grab latest release from the [project page][roswell].
+
+Once roswell is installed, getting cl-journal is just a matter of
+
+`ros install can3p/cl-journal`
+
+## Install (Mac OS)
 
 ```bash
 $ brew tap can3p/cl-journal
@@ -60,3 +74,5 @@ This list is not structured in a particular order
 ## License
 
 All the code is in public domain, pull requests are welcome. Enjoy!
+
+[roswell]: https://github.com/roswell/roswell/releases

@@ -15,13 +15,23 @@ cl-journal push
 git add posts.lisp
 "))
 
-(defparameter +get-password-cmd+ "security find-internet-password -a ~a -s ~a -w")
+(defun get-password-cmd (login url)
+  #-LINUX
+  (format nil "security find-internet-password -a ~a -s ~a -w" login url)
+  #+LINUX
+  (format nil "secret-tool lookup '~a:login' ~a" url login))
+
+(defun set-password-cmd (login url password)
+  #-LINUX
+  (format nil "security add-internet-password -a ~a -s ~a -w '~A'" login url password)
+  #+LINUX
+  (format nil "secret-tool store --label='~a' '~a:login' ~a '~A'" url url login password))
 
 (defun setup-dev-env ()
   (chdir #P"/Users/dpetrov/test-drafts/"))
 
 (defun get-password-no-set (login url)
-  (exec (format nil +get-password-cmd+ login url)))
+  (exec (get-password-cmd login-url)))
 
 (defun get-password (login url)
   (let ((password (get-password-no-set login url)))
@@ -33,7 +43,7 @@ git add posts.lisp
       (format t "Password is already set!~%")
       (progn
         (let ((password (prompt-read-password "Password")))
-          (exec (format nil "security add-internet-password -a ~a -s ~a -w '~A'" login url password))
+          (exec (set-password-cmd login url password))
           login
           ))))
 
