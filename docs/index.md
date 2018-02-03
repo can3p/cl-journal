@@ -33,11 +33,28 @@ find.
 * Quick look up of post urls by filename
 * Optional git pre-commit hook to publish posts
 
-## Install
+## Install (Mac OS)
 
 ~~~bash
 $ brew tap can3p/cl-journal
 $ brew install cl-journal
+~~~
+
+## Install (Ubuntu linux)
+
+1.  `sudo apt-get install libsecret-tools`
+2. [Install][roswell] roswell
+3.  `echo 'PATH="~/.roswell/bin:$PATH"' >> ~/.bashrc`
+4. `ros install can3p/cl-journal`
+
+~~~bash
+$ brew tap can3p/cl-journal
+$ brew install cl-journal
+~~~
+
+## Blog creation
+
+~~~bash
 $ mkdir yourblog.livejournal.com
 $ cd yourblog.livejournal.com
 $ cl-journal init
@@ -87,10 +104,11 @@ This list is not structured in a particular order
 
 ## Frequently asked questions:
 
-- *Why does client support only Max OS X?*
+- *Where does the client work?*
 
-  I don't have any other operating system at hand, sorry. But pull requests are
-  definitely welcome!
+  Client was tested and works on linux and Mac OS. If you're a happy
+  user of any other operating system, feel free to make pull request
+  with fixes for your operating system.
 
 - *Which dialiect of markdown is supported?
 
@@ -106,9 +124,18 @@ This list is not structured in a particular order
   cl-journal uses system keychain to store password, so it's as secure as
   keychain (I hope).
 
-- *Why doesn't client support hostings like [dreamwidth](https://www.dreamwidth.org/)?*
+  On linux `secret-tools` library is used, so passwords are as secure as
+  it is.
 
-  It doesn't for no other reason than because I don't use it myself! If you do
+- *Does client support only livejournal.com service?*
+
+  No! At the moment all livejournal clones should also work.
+  Dreamwidth was tested and works and it's only one service which
+  goes preconfigured along with livejournal. cl-journal can be
+  used with any other livejournal clone, since endpoint can be
+  configured during blog initialization.
+
+  If you don't know what that means and want to have your service supported
   consider opening a [github issue](https://github.com/can3p/cl-journal/issues).
 
 - *How can I help?*
@@ -121,3 +148,5 @@ This list is not structured in a particular order
 ## License
 
 All the code is in public domain, pull requests are welcome. Enjoy!
+
+[roswell]: https://github.com/roswell/roswell/releases

@@ -4,7 +4,13 @@ title: Changelog
 
 ## Not released yet
 
+## 0.5.0
+
 * Linux support!
+* `ignore-all` command. cl-journal relies on file timestamp to understand
+  whether it was modified since the last sync. In case timestamp was
+  modified but actual change did not happen, this command will help
+  to calm cl-journal down and make him treat all posts as updated.
 
 ## 0.4.1
 
