@@ -47,7 +47,7 @@ git add posts.lisp
       (progn
         (let ((password (prompt-read-password "Password")))
           (exec (set-password-cmd login url password))
-          login
+          password
           ))
       #+LINUX
       (progn
