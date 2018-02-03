@@ -42,7 +42,7 @@
 (defun prompt-read-password (x)
   (format *query-io* "~a: " x)
   (force-output *query-io*)
-  (let ((password (run-program "read -s val; echo $val" :output :string :input :interactive)))
+  (let ((password (run-program "stty -echo; read val; stty echo; echo $val" :output :string :input :interactive)))
     (string-trim '(#\Newline #\Space) password)
     ))
 
