@@ -31,7 +31,7 @@ git add posts.lisp
   (chdir #P"/Users/dpetrov/test-drafts/"))
 
 (defun get-password-no-set (login url)
-  (exec (get-password-cmd login-url)))
+  (exec (get-password-cmd login url)))
 
 (defun get-password (login url)
   (let ((password (get-password-no-set login url)))
