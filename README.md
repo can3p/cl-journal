@@ -29,6 +29,11 @@ for this.
 
 After this we need roswell, you can grab latest release from the [project page][roswell].
 
+Important detail, roswell will put executables into `~/.roswell/bin` folder
+and it should be in path for script to work correctly:
+
+`echo 'PATH="~/.roswell/bin:$PATH"' >> ~/.bashrc`
+
 Once roswell is installed, getting cl-journal is just a matter of
 
 `ros install can3p/cl-journal`

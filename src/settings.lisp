@@ -21,11 +21,13 @@ git add posts.lisp
   #+LINUX
   (format nil "secret-tool lookup '~a:login' ~a" url login))
 
+#-LINUX
 (defun set-password-cmd (login url password)
-  #-LINUX
-  (format nil "security add-internet-password -a ~a -s ~a -w '~A'" login url password)
-  #+LINUX
-  (format nil "secret-tool store --label='~a' '~a:login' ~a '~A'" url url login password))
+  (format nil "security add-internet-password -a ~a -s ~a -w '~A'" login url password))
+
+#+LINUX
+(defun set-password-cmd (login url)
+  (format nil "secret-tool store --label='~a' '~a:login' '~a'" url url login))
 
 (defun setup-dev-env ()
   (chdir #P"/Users/dpetrov/test-drafts/"))
@@ -41,11 +43,16 @@ git add posts.lisp
 (defun set-password (login url)
   (if (not (equal "" (get-password-no-set login url)))
       (format t "Password is already set!~%")
+      #-LINUX
       (progn
         (let ((password (prompt-read-password "Password")))
           (exec (set-password-cmd login url password))
           login
-          ))))
+          ))
+      #+LINUX
+      (progn
+        (exec-interactive (set-password-cmd login url))
+        (get-password-no-set login url))))
 
 (defun setup-hook ()
   (if (y-or-n-p "Do you want to set up pre-commit hook to make posting easier?")

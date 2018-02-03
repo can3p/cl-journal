@@ -6,6 +6,7 @@
            :cwd-is-git-dir-p
            :cwd-has-posts-file-p
            :exec
+           :exec-interactive
            :prompt-read
            :prompt-read-password
            :chdir))
@@ -45,6 +46,12 @@
   (let ((password (run-program "stty -echo; read val; stty echo; echo $val" :output :string :input :interactive)))
     (string-trim '(#\Newline #\Space) password)
     ))
+
+(defun exec-interactive (str)
+  (let ((result (run-program str
+                            :input :interactive
+                            :output :string)))
+    (string-trim `(#\Newline #\Space) result)))
 
 (defun exec (str)
   (let ((result (run-program str
