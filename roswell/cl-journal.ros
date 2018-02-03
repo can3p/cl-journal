@@ -11,4 +11,6 @@ exec ros -Q -- $0 "$@"
 
 
 (defun main (&rest args)
-  (cl-journal.main:main args))
+  ; we need one more nil for normalization since
+  ; buildapp puts pathname there
+  (cl-journal.main:main (cons nil args)))
