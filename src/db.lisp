@@ -36,13 +36,14 @@
 (in-package :cl-journal.db)
 
 (defvar *add-date-ts* nil)
+(defvar *raw-text* t)
 (defvar *default-service* :livejournal)
 
 (defun resolve-service-name (service)
   (cond
     ((string= service "livejournal") :livejournal)
     ((string= service "dreamwidth") :dreamwidth)
-    ((string= service "t") :manual)
+    (t :manual)
     ))
 
 (defun resolve-service-endpoint (service)
@@ -238,10 +239,10 @@
         (service (resolve-service-name service-name)))
     (when (string= "" login) (error "Cannot proceed without login"))
     (create-db-from-list `(:login ,login
-                           :version 1
+                           :version 2
                            :service ,service
                            :service-endpoint ,(resolve-service-endpoint
-                                              service)
+                                              service-name)
                            :posts ()))))
 
 (defun create-db-from-list (l)

@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+* 2018-02-17 Bug fix to initialize cl-journal correctly for custom services
+
 ## 0.5.0
 
 * 2018-02-03 Linux support!
