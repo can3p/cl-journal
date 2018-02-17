@@ -4,6 +4,9 @@ title: Changelog
 
 ## Not released yet
 
+## 0.5.1
+
+* 2018-02-17 Support raw format, when markdown is sent to the server without being compiled to html
 * 2018-02-17 Bug fix to initialize cl-journal correctly for custom services
 
 ## 0.5.0

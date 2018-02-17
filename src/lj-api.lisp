@@ -15,6 +15,8 @@
   (:import-from
    :cl-journal.db
    :to-xmlrpc-struct
+   :*raw-text*
+   :raw-text
    :<post-file>
    :<post>
    :<db>
@@ -99,8 +101,9 @@
 
 (defmethod publish-post ((db <db>) (post-file <post-file>))
   (set-credentials db)
-  (let ((post (create-new-post post-file)))
-    (push post (posts db))))
+  (let ((*raw-text* (raw-text db)))
+    (let ((post (create-new-post post-file)))
+      (push post (posts db)))))
 
 (defgeneric delete-post (db post))
 
@@ -115,5 +118,6 @@
 
 (defmethod update-post ((db <db>) (post <post>))
   (set-credentials db)
-  (update-old-post post)
+  (let ((*raw-text* (raw-text db)))
+    (update-old-post post))
   (setf (updated-at post) (get-universal-time)))

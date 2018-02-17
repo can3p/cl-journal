@@ -9,6 +9,8 @@
   (:import-from :alexandria :curry :compose)
   (:export :<post-file>
    :<post>
+   :*raw-text*
+   :raw-text
    :<db>
    :to-xmplrpc-struct
    :read-from-file
@@ -64,6 +66,7 @@
    (filename :initarg :filename :reader filename)
    (title :initarg :title :reader title)
    (body :initarg :body :reader body)
+   (body-raw :initarg :body-raw :reader body-raw)
    (privacy :initarg :privacy :reader privacy)
    (journal :initarg :journal :reader journal)
    (fields :initarg :fields :reader fields)
@@ -79,6 +82,7 @@
                    :draft (getf parsed :draft)
                    :title (getf parsed :title)
                    :body (getf parsed :body)
+                   :body-raw (getf parsed :body-raw)
                    :privacy (getf parsed :privacy)
                    :journal (getf parsed :journal)
                    :fields (alexandria:remove-from-plist parsed :title :body :privacy)
@@ -86,7 +90,7 @@
 
 (defmethod to-event-list ((post <post-file>) &optional (transform #'identity))
   (let ((l (list
-            :event (body post)
+            :event (if *raw-text* (body-raw post) (body post))
             :subject (title post)
             )))
     (-<> l
@@ -203,6 +207,7 @@
   ((posts :initarg :posts :accessor posts)
    (version :initarg :version :reader version)
    (login :initarg :login :reader login)
+   (raw-text :initarg :raw-text :reader raw-text)
    (service :initarg :service :reader service)
    (service-endpoint :initarg :service-endpoint :reader service-endpoint)))
 
@@ -224,6 +229,7 @@
   `(:login ,(login db)
     :version 2
     :service ,(service db)
+    :raw-text ,(raw-text db)
     :service-endpoint ,(service-endpoint db)
     :posts ,(mapcar #'to-list (posts db))))
 
@@ -236,11 +242,13 @@
 
 (defun create-empty-db (service-name)
   (let ((login (prompt-read "Please enter you login"))
+        (raw-text (not (yes-or-no-p "Transform markdown into html?")))
         (service (resolve-service-name service-name)))
     (when (string= "" login) (error "Cannot proceed without login"))
     (create-db-from-list `(:login ,login
                            :version 2
                            :service ,service
+                           :raw-text ,raw-text
                            :service-endpoint ,(resolve-service-endpoint
                                               service-name)
                            :posts ()))))
@@ -272,6 +280,7 @@
                  :version (getf l :version)
                  :login (getf l :login)
                  :service (getf l :service)
+                 :raw-text (getf l :raw-text)
                  :service-endpoint (getf l :service-endpoint)
                  :posts (mapcar #'create-post-from-list
                                 (getf l :posts))))
