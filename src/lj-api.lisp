@@ -55,6 +55,17 @@
    (rpc-call "LJ.XMLRPC.getchallenge")
    (getf :challenge)))
 
+(defun lj-getevents (itemid)
+  (let* ((c (add-challenge (list :itemid itemid
+                                 :ver 1
+                                 :selecttype "one"))))
+    (rpc-call "LJ.XMLRPC.getevents" c)))
+
+(defun lj-syncitems (&optional (lastsync nil))
+  (declare (ignore lastsync))
+  (let* ((c (add-challenge (list :ver 1))))
+    (rpc-call "LJ.XMLRPC.syncitems" c)))
+
 (defun add-challenge (&optional (req nil))
   (let* ((challenge (getchallenge))
          (auth-response (hash (concatenate 'string
@@ -66,6 +77,13 @@
                        :auth_method "challenge"
                        :auth_challenge challenge
                        :auth_response auth-response))))
+
+;; (def post-structure :itemid "number"
+;;   :subject "maybe-encoded-string"
+;;   :event "maybe-encoded-string"
+;;   :allowmask 1
+;;   :security "usemask"
+;;   :anum "number"
 
 (defgeneric create-new-post (post))
 
@@ -121,3 +139,10 @@
   (let ((*raw-text* (raw-text db)))
     (update-old-post post))
   (setf (updated-at post) (get-universal-time)))
+
+;; (defgeneric sync-post ((db <db>) itemid))
+
+;; (defmethod sync-post ((db <db>) itemid)
+;;   (set-credentials db)
+;;   (let ((post (read-remote-post itemid)))
+;;     (push post (posts db))))

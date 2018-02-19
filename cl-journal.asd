@@ -22,6 +22,8 @@ This file is a part of cl-journal project.
                #:cl-arrows
                #:cl-markdown
                #:split-sequence
+               #:cl-base64
+               #:babel
                #+sbcl :sb-introspect
                )
   :components ((:module "src"
