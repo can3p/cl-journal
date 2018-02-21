@@ -48,11 +48,11 @@
     (t :manual)
     ))
 
-(defun resolve-service-endpoint (service)
+(defun resolve-service-endpoint (service service-name)
   (case service
     (:livejournal "http://www.livejournal.com/interface/xmlrpc")
     (:dreamwidth  "https://www.dreamwidth.org/interface/xmlrpc")
-    (otherwise service)))
+    (otherwise service-name)))
 
 (defun service-url (db)
   (case (service db)
@@ -250,7 +250,7 @@
                            :service ,service
                            :raw-text ,raw-text
                            :service-endpoint ,(resolve-service-endpoint
-                                              service-name)
+                                              service service-name)
                            :posts ()))))
 
 (defun create-db-from-list (l)

@@ -4,6 +4,10 @@ title: Changelog
 
 ## Not released yet
 
+## 0.5.2
+
+* 2018-02-22 Fix livejournal service initialization, which resulted in wrong service endpoint saved in config
+
 ## 0.5.1
 
 * 2018-02-17 Support raw format, when markdown is sent to the server without being compiled to html
