@@ -55,16 +55,29 @@
    (rpc-call "LJ.XMLRPC.getchallenge")
    (getf :challenge)))
 
-(defun lj-getevents (itemid)
-  (let* ((c (add-challenge (list :itemid itemid
-                                 :ver 1
-                                 :selecttype "one"))))
+;; source of wisdom - https://github.com/apparentlymart/livejournal/blob/master/cgi-bin/ljprotocol.pl
+(defun lj-getevents (itemids)
+  (let* ((c (-<> (list
+                  ;; this gives us lj-embeds with video id, that we can later
+                  ;; convert to something meaningful
+                  :get_video_ids 1
+                  :itemids (format nil "~{~s~^,~}" itemids)
+                  :lineendings "unix"
+                  :selecttype "multiple")
+                 (add-challenge))))
     (rpc-call "LJ.XMLRPC.getevents" c)))
 
 (defun lj-syncitems (&optional (lastsync nil))
-  (declare (ignore lastsync))
-  (let* ((c (add-challenge (list :ver 1))))
+  (let* ((c (-<> (list :ver 1)
+                 (add-challenge)
+                 (maybe-add-last-sync <> lastsync))))
     (rpc-call "LJ.XMLRPC.syncitems" c)))
+
+(defun maybe-add-last-sync (l &optional (lastsync nil))
+  (if lastsync
+      (concatenate 'list l
+                   (list :lastsync lastsync))
+      l))
 
 (defun add-challenge (&optional (req nil))
   (let* ((challenge (getchallenge))
