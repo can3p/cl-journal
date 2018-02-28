@@ -22,6 +22,7 @@
    :service-url
    :to-list
    :get-by-fname
+   :last-post-ts
    :filename
    :title
    :journal

@@ -26,6 +26,7 @@
    :service-url
    :service-endpoint
    :read-from-file
+   :last-post-ts
    :create-post-from-xmlrpc-struct
    :filename
    :journal
@@ -182,3 +183,48 @@
 ;;                           (fetch-events (last-fetched-ts store))
 ;;                           (merge-events store new-events sync-ts))
 ;;       (fetch-posts store))))
+
+;; take last-post-ts from the store
+;; call sync posts
+;; filter out comments and posts that are already in db
+;; and have sync date later than last-post-ts
+;; repeat the process till nothing is left or we have a
+;; decent amount of items
+(defconstant +number-items-to-fetch+ 100)
+
+(defun get-unfetched-item-ids (store)
+  (labels (
+           ;; to be implemented
+           (exists-in-store-and-is-up-to-date (item)
+             (declare (ignore item))
+             T)
+           (not-a-post (item)
+             (declare (ignore item))
+             nil)
+           (sync-more (l ts)
+             (flet (
+                    ;; to be implemented
+                    (already-in-a-list (item)
+                      (declare (ignore item))
+                      nil))
+               (cond
+                 ((> (length l) +number-items-to-fetch+)
+                  (subseq l 0 +number-items-to-fetch+))
+                 ((= (length l) +number-items-to-fetch+) l)
+                 (t
+                  (let* ((new-l (-<> ts
+                                     (lj-syncitems)
+                                     (delete-if #'exists-in-store-and-is-up-to-date <>)
+                                     (delete-if #'already-in-a-list <>)
+                                     (delete-if #'not-a-post <>)
+                                     (concatenate 'list l <>)))
+                         (new-ts (-<> new-l
+                                      (reverse)
+                                      (car)
+                                      (getf <> :time))))
+                    (if (= 0 (length new-l)) l
+                        (-<> new-l
+                             (concatenate 'list l <>)
+                             (sync-more <> new-ts)))))))))
+    (sync-more nil (last-post-ts store))))
+
