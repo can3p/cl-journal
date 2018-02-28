@@ -74,7 +74,8 @@ Launch your favourite lisp REPL and:
 ~~~lisp
 > (ql:quickload :cl-journal-test)
 > (ql:quickload :prove)
-> (prove:run :cl-journal-test :reporter :fiveam)
+> (setf prove:*enable-colors* nil) ;; disable colors if you do it from slime
+> (prove:run :cl-journal-test)
 ~~~
 
 ## TODO or not supported yet

@@ -8,8 +8,8 @@ This file is a part of cl-journal project.
 (in-package :cl-journal-test-asd)
 
 (defsystem cl-journal-test
-  :author ""
-  :license ""
+  :author "Dmitry Petrov <dpetroff@gmail.com>"
+  :license "Public Domain"
   :depends-on (:cl-journal
                :prove)
   :components ((:module "t"
@@ -19,5 +19,5 @@ This file is a part of cl-journal project.
 
   :defsystem-depends-on (:prove-asdf)
   :perform (test-op :after (op c)
-                    (funcall (intern #.(string :run-test-system) :prove-asdf) c)
+                    (funcall (intern #.(string :run) :prove-asdf) c)
                     (asdf:clear-system c)))
