@@ -20,6 +20,8 @@
    :<post-file>
    :<post>
    :<db>
+   :<store>
+   :fetch-store
    :login
    :service-url
    :service-endpoint
@@ -72,19 +74,6 @@
                  (add-challenge)
                  (maybe-add-last-sync <> lastsync))))
     (rpc-call "LJ.XMLRPC.syncitems" c)))
-
-;; sync algorithm to be implemented:
-;; 1. Call syncitems with timestamp of last synced item or nothing
-;; 2. Goto 5 if no entries were returned
-;; 3. Filter out items that have not yet been downloaded, or their
-;;    server timestamp is greater than timestamp of last sync
-;; 4. Goto 1 if we have less than ~90 entries to download
-;; 5. Finish if no entries were collected
-;; 6. Download collected items via getevents
-;; 7. Add last sync time to every downloaded entry.
-;; 8. Append downloaded entries to saved ones and save timestamp
-;;    of the last one from syncitems call as last sync timestamp
-;; 9. Goto 1
 
 (defun maybe-add-last-sync (l &optional (lastsync nil))
   (if lastsync
@@ -166,9 +155,30 @@
     (update-old-post post))
   (setf (updated-at post) (get-universal-time)))
 
-;; (defgeneric sync-post ((db <db>) itemid))
+(defgeneric fetch-posts (db))
 
-;; (defmethod sync-post ((db <db>) itemid)
-;;   (set-credentials db)
-;;   (let ((post (read-remote-post itemid)))
-;;     (push post (posts db))))
+(defmethod fetch-posts ((db <db>))
+  (set-credentials db)
+  (fetch-posts (fetch-store db)))
+
+;; sync algorithm:
+;; 1. Call syncitems with timestamp of last synced item or nothing
+;; 2. Goto 5 if no entries were returned
+;; 3. Filter out items that have not yet been downloaded, or their
+;;    server timestamp is greater than timestamp of last sync
+;; 4. Goto 1 if we have less than ~90 entries to download
+;; 5. Finish if no entries were collected
+;; 6. Download collected items via getevents
+;; 7. Add last sync time to every downloaded entry.
+;; 8. Append downloaded entries to saved ones and save timestamp
+;;    of the last one from syncitems call as last sync timestamp
+;; 9. Goto 1
+
+;; @TODO: actually implement the code
+;; (defmethod fetch-posts ((store <store>))
+;;   (let* ((new-itemids (get-unfetched-item-ids store)))
+;;     (when (> (length new-itemids) 0)
+;;       (destructruing-bind (new-events sync-ts)
+;;                           (fetch-events (last-fetched-ts store))
+;;                           (merge-events store new-events sync-ts))
+;;       (fetch-posts store))))

@@ -209,10 +209,18 @@
    (login :initarg :login :reader login)
    (raw-text :initarg :raw-text :reader raw-text)
    (service :initarg :service :reader service)
-   (service-endpoint :initarg :service-endpoint :reader service-endpoint)))
+   (service-endpoint :initarg :service-endpoint :reader service-endpoint)
+   (fetch-store :reader fetch-store)
+   ))
 
-(defmethod print-object ((db <db>) stream)
-  (format stream "<db ~a>~%" (posts db)))
+
+;; in future we will populate store once object is
+;; created and we don't want to do this everytime
+;; we create a database. So, we do this nice
+;; hack to get lazy reader
+(defmethod slot-unbound (class (db <db>) (slot-name (eql 'fetch-store)))
+  (setf (slot-value db 'fetch-store)
+        (make-instance '<store>)))
 
 (defgeneric get-modified (db))
 
@@ -273,7 +281,7 @@
                (list
                 :service *default-service*
                 :service-endpoint (resolve-service-endpoint
-                                   *default-service*))))
+                                   *default-service* *default-service*))))
 
 (defun create-db-from-list-finally (l)
   (make-instance '<db>
@@ -325,3 +333,9 @@
                    plist
                    (list :usejournal journal))
       plist))
+
+(defclass <store> ()
+  (
+   (events :initform nil :accessor events)
+   (last-post-ts :initform nil :accessor last-post-ts)
+   ))
