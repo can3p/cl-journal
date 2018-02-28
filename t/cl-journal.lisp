@@ -1,12 +1,15 @@
 (in-package :cl-user)
 (defpackage cl-journal-test
   (:use :cl
-   :cl-journal2
+   :cl-journal
         :prove))
-(in-package :cl-journal2-test)
+(in-package :cl-journal-test)
 
-;; NOTE: To run this test file, execute `(asdf:test-system :cl-journal2)' in your Lisp.
+;; NOTE: To run this test file, execute `(asdf:test-system :cl-journal)' in your Lisp.
 
 (plan nil)
+
+(subtest "test1234"
+  (is 1 1))
 
 (finalize)

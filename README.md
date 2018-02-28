@@ -67,6 +67,16 @@ keep rejecting to post it during the sync or add a `draft: ` line
 at the header of the file. In the latter case client will ignore
 the file until you remove it.
 
+## Running tests
+
+Launch your favourite lisp REPL and:
+
+~~~lisp
+> (ql:quickload :cl-journal-test)
+> (ql:quickload :prove)
+> (prove:run :cl-journal-test :reporter :fiveam)
+~~~
+
 ## TODO or not supported yet
 
 This list is not structured in a particular order
