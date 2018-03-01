@@ -18,6 +18,7 @@
    :create-empty-db
    :create-db-from-list
    :login
+   :events
    :service-endpoint
    :service-url
    :to-list

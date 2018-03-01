@@ -24,6 +24,7 @@ This file is a part of cl-journal project.
                #:split-sequence
                #:cl-base64
                #:babel
+               #:local-time
                #+sbcl :sb-introspect
                )
   :components ((:module "src"

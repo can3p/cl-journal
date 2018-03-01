@@ -71,7 +71,70 @@
 ;;          :REPLY_COUNT 0))
 ;;  :LASTSYNC "2018-02-27 21:26:21")
 
-(subtest "test1234"
-  (is 1 1))
+(defun create-stub-event (item-id sync-ts)
+  `(
+     :event (:itemid ,item-id)
+     :sync-ts ,sync-ts))
+
+(defun create-stub-store (&rest event-list)
+  (let ((store (make-instance 'cl-journal.db::<store>)))
+    (setf (cl-journal.db::events store) event-list)
+    store))
+
+(subtest "get-unfetched-item-ids"
+
+  (subtest "syncitems-post-p"
+    (is (cl-journal.lj-api::syncitems-post-p
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")) T)
+
+    (is (cl-journal.lj-api::syncitems-post-p
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "C-50")) NIL))
+
+  (subtest "syncitems-same-post-p"
+    (is (cl-journal.lj-api::syncitems-same-post-p
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         '(:TIME "2017-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+         ) T)
+
+    (is (cl-journal.lj-api::syncitems-same-post-p
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-51")
+         ) NIL))
+
+  (subtest "syncitems-newer-post-in-store-p"
+    (is (cl-journal.lj-api::syncitems-newer-post-in-store-p
+         (create-stub-store (create-stub-event 51 "2018-02-27 20:45:36"))
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         ) NIL)
+
+    (is (cl-journal.lj-api::syncitems-newer-post-in-store-p
+         (create-stub-store (create-stub-event 50 "2018-02-27 18:45:36"))
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         ) NIL)
+
+    (is (cl-journal.lj-api::syncitems-newer-post-in-store-p
+         (create-stub-store (create-stub-event 50 "2017-02-27 20:45:36"))
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         ) NIL)
+
+    (is (cl-journal.lj-api::syncitems-newer-post-in-store-p
+         (create-stub-store (create-stub-event 50 "2018-02-27 20:45:37"))
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         ) T)
+
+    (is (cl-journal.lj-api::syncitems-newer-post-in-store-p
+         (create-stub-store (create-stub-event 50 "2018-02-28 20:45:36"))
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         ) T)
+
+    (is (cl-journal.lj-api::syncitems-newer-post-in-store-p
+         (create-stub-store
+          (create-stub-event 50 "2018-02-26 20:45:36")
+          (create-stub-event 50 "2018-02-28 20:45:36")
+          )
+         '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+         ) T)
+    )
+  )
 
 (finalize)

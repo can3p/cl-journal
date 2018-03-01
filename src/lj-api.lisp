@@ -12,6 +12,9 @@
   (:import-from :alexandria :compose)
   (:import-from :cl-journal.settings
                 :get-password)
+  (:import-from :local-time
+   :timestamp>
+   :parse-timestring)
   (:import-from
    :cl-journal.db
    :to-xmlrpc-struct
@@ -21,6 +24,7 @@
    :<post>
    :<db>
    :<store>
+   :events
    :fetch-store
    :login
    :service-url
@@ -192,39 +196,71 @@
 ;; decent amount of items
 (defconstant +number-items-to-fetch+ 100)
 
-(defun get-unfetched-item-ids (store)
-  (labels (
-           ;; to be implemented
-           (exists-in-store-and-is-up-to-date (item)
-             (declare (ignore item))
-             T)
-           (not-a-post (item)
-             (declare (ignore item))
-             nil)
-           (sync-more (l ts)
-             (flet (
-                    ;; to be implemented
-                    (already-in-a-list (item)
-                      (declare (ignore item))
-                      nil))
-               (cond
-                 ((> (length l) +number-items-to-fetch+)
-                  (subseq l 0 +number-items-to-fetch+))
-                 ((= (length l) +number-items-to-fetch+) l)
-                 (t
-                  (let* ((new-l (-<> ts
-                                     (lj-syncitems)
-                                     (delete-if #'exists-in-store-and-is-up-to-date <>)
-                                     (delete-if #'already-in-a-list <>)
-                                     (delete-if #'not-a-post <>)
-                                     (concatenate 'list l <>)))
-                         (new-ts (-<> new-l
-                                      (reverse)
-                                      (car)
-                                      (getf <> :time))))
-                    (if (= 0 (length new-l)) l
-                        (-<> new-l
-                             (concatenate 'list l <>)
-                             (sync-more <> new-ts)))))))))
-    (sync-more nil (last-post-ts store))))
+(defun syncitems-post-p (item)
+  (equal #\L (-<> item
+                  (getf <> :item)
+                  (char <> 0))))
+
+(defun syncitems-same-post-p (item1 item2)
+  (string= (getf item1 :item)
+           (getf item2 :item)))
+
+(defun acc (l &rest args)
+  "Access member in a nested plist.
+
+   Usage (acc l :one :two :three)"
+  (cond
+    ((null args) l)
+    ((not (listp l)) nil)
+    (t (apply #'acc (getf l (car args)) (cdr args)))))
+
+(defun syncitems-newer-post-in-store-p (store item)
+  (let ((itemid (-<> item
+                     (getf <> :item)
+                     (subseq <> 2)
+                     (parse-integer))))
+    (labels ((item-p (event)
+               (equal itemid (acc event :event :itemid)))
+             (parse (ts)
+               (parse-timestring ts :date-time-separator #\Space)))
+      (let ((event (find-if #'item-p (events store) :from-end t)))
+        (and event
+            (timestamp>
+             (parse (acc event :sync-ts))
+             (parse (acc item :time)))
+            )))))
+
+;; (defun get-unfetched-item-ids (store)
+;;   (labels (
+;;            ;; to be implemented
+;;            (exists-in-store-and-is-up-to-date (item)
+;;              (syncitems-newer-post-in-store-p (store item))
+;;              )
+;;            (sync-more (l ts)
+;;              (cond
+;;                ((> (length l) +number-items-to-fetch+)
+;;                 (subseq l 0 +number-items-to-fetch+))
+;;                ((= (length l) +number-items-to-fetch+) l)
+;;                (t
+;;                 (let* ((orig-list (-<> ts
+;;                                        (lj-syncitems)
+;;                                        (getf <> :syncitems))
+;;                                   (orig-list-len (length orig-list))
+;;                                   ;; we need to fetch last from the original
+;;                                   ;; list since items at the end might be removed
+;;                                   (new-ts (-<> orig-list
+;;                                                (reverse)
+;;                                                (car)
+;;                                                (getf <> :time)))
+;;                                   (new-l (-<> orig-list
+;;                                               (remove-if #'exists-in-store-and-is-up-to-date <>)
+;;                                               (remove-if-not #'sync-items-post-p <>)
+;;                                               (concatenate 'list l <>)
+;;                                               (remove-duplicates <> :test #'syncitems-same-post-p))
+;;                                   )
+;;                        (if (= 0 (length new-l)) l
+;;                            (-<> new-l
+;;                                 (concatenate 'list l <>)
+;;                                 (sync-more <> new-ts)))))))))
+;;     (sync-more nil (last-post-ts store))))
 
