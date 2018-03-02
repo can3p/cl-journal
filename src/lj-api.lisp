@@ -230,7 +230,9 @@
     (labels ((item-p (event)
                (equal itemid (acc event :event :itemid)))
              (parse (ts)
-               (parse-timestring ts :date-time-separator #\Space)))
+               (let
+                   ((local-time::*default-timezone* local-time::+utc-zone+))
+                 (parse-timestring ts :date-time-separator #\Space))))
       (let ((event (find-if #'item-p (events store) :from-end t)))
         (and event
             (timestamp>
