@@ -243,7 +243,7 @@
 (defun syncitems-item-data (l)
   "Extract timestamp and itemid from the sync item record"
   (values (parse-integer (subseq (getf l :item) 2))
-          (parse-timestring (getf l :time) :date-time-separator #\Space)))
+          (getf l :time)))
 
 
 (defun get-unfetched-item-ids (store
