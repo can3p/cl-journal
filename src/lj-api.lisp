@@ -240,6 +240,12 @@
              (parse (acc item :time)))
             )))))
 
+(defun syncitems-item-data (l)
+  "Extract timestamp and itemid from the sync item record"
+  (values (parse-integer (subseq (getf l :item) 2))
+          (parse-timestring (getf l :time) :date-time-separator #\Space)))
+
+
 (defun get-unfetched-item-ids (store
                                &key (num-to-fetch +number-items-to-fetch+))
   "Given current state of store fetch next num-to-fetch

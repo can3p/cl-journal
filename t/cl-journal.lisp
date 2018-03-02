@@ -135,6 +135,22 @@
          '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
          ) T)
     )
+
+  (subtest "syncitems-item-data"
+    (let
+        ((local-time::*default-timezone* local-time::+utc-zone+))
+      (multiple-value-bind (itemid time)
+          (cl-journal.lj-api::syncitems-item-data
+           '(:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50"))
+        (is itemid 50)
+        (is (local-time:timestamp-year time) 2018)
+        (is (local-time:timestamp-month time) 2)
+        (is (local-time:timestamp-day time) 27)
+        (is (local-time:timestamp-hour time) 20)
+        (is (local-time:timestamp-minute time) 45)
+        (is (local-time:timestamp-second time) 36)
+        )))
+
   )
 
 (finalize)
