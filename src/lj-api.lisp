@@ -214,6 +214,14 @@
     ((not (listp l)) nil)
     (t (apply #'acc (getf l (car args)) (cdr args)))))
 
+(defun partial (func &rest args)
+  "Partially apply function. Another function
+   is returned that will call passed function
+   with all arguments from first call + arguments
+   from the second one"
+  (lambda (&rest args2)
+    (apply func (concatenate 'list args args2))))
+
 (defun syncitems-newer-post-in-store-p (store item)
   (let ((itemid (-<> item
                      (getf <> :item)
@@ -230,37 +238,40 @@
              (parse (acc item :time)))
             )))))
 
-;; (defun get-unfetched-item-ids (store)
-;;   (labels (
-;;            ;; to be implemented
-;;            (exists-in-store-and-is-up-to-date (item)
-;;              (syncitems-newer-post-in-store-p (store item))
-;;              )
-;;            (sync-more (l ts)
-;;              (cond
-;;                ((> (length l) +number-items-to-fetch+)
-;;                 (subseq l 0 +number-items-to-fetch+))
-;;                ((= (length l) +number-items-to-fetch+) l)
-;;                (t
-;;                 (let* ((orig-list (-<> ts
-;;                                        (lj-syncitems)
-;;                                        (getf <> :syncitems))
-;;                                   (orig-list-len (length orig-list))
-;;                                   ;; we need to fetch last from the original
-;;                                   ;; list since items at the end might be removed
-;;                                   (new-ts (-<> orig-list
-;;                                                (reverse)
-;;                                                (car)
-;;                                                (getf <> :time)))
-;;                                   (new-l (-<> orig-list
-;;                                               (remove-if #'exists-in-store-and-is-up-to-date <>)
-;;                                               (remove-if-not #'sync-items-post-p <>)
-;;                                               (concatenate 'list l <>)
-;;                                               (remove-duplicates <> :test #'syncitems-same-post-p))
-;;                                   )
-;;                        (if (= 0 (length new-l)) l
-;;                            (-<> new-l
-;;                                 (concatenate 'list l <>)
-;;                                 (sync-more <> new-ts)))))))))
-;;     (sync-more nil (last-post-ts store))))
+(defun get-unfetched-item-ids (store
+                               &key (num-to-fetch +number-items-to-fetch+))
+  "Given current state of store fetch next num-to-fetch
+   items that need to be synced. Returns this number
+   or lest if that's all that is available"
+  (labels
+      ((sync-more (l ts)
+         (cond
+           ((> (length l) num-to-fetch)
+            (subseq l 0 num-to-fetch))
+           ((= (length l) num-to-fetch) l)
+           (t
+            (let* ((orig-list (-<> ts
+                                   (lj-syncitems)
+                                   (getf <> :syncitems)))
+                   (orig-list-len (length orig-list))
+                   ;; we need to fetch last from the original
+                   ;; list since items at the end might be removed
+                   (new-ts (-<> orig-list
+                                (reverse)
+                                (car)
+                                (getf <> :time)))
+                   (new-l (-<> orig-list
+                               (remove-if (partial
+                                           #'syncitems-newer-post-in-store-p
+                                           store) <>)
+                               (remove-if-not #'syncitems-post-p <>)
+                               (concatenate 'list l <>)
+                               (remove-duplicates <>
+                                                  :test
+                                                  #'syncitems-same-post-p))))
+              (if (= 0 orig-list-len) l
+                  (-<> new-l
+                       (concatenate 'list l <>)
+                       (sync-more <> new-ts))))))))
+    (sync-more nil (last-post-ts store))))
 
