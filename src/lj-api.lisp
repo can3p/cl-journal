@@ -245,6 +245,12 @@
   (values (parse-integer (subseq (getf l :item) 2))
           (getf l :time)))
 
+(defun print-and-return (s)
+  "Prints value and returns it right away. Useful to
+   get insights about internal of complext expressions."
+  (print s)
+  s)
+
 
 (defun get-unfetched-item-ids (store
                                &key (num-to-fetch +number-items-to-fetch+))
@@ -291,7 +297,8 @@
                                (remove-duplicates <>
                                                   :test
                                                   #'syncitems-same-post-p))))
-              (if (= 0 orig-list-len) l
+              (if (= 0 orig-list-len)
+                  (get-return-values l)
                   (-<> new-l
                        (concatenate 'list l <>)
                        (sync-more <> new-ts))))))))

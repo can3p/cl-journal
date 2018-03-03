@@ -2,7 +2,8 @@
 (defpackage cl-journal-test
   (:use :cl
    :cl-journal
-        :prove))
+   :mockingbird
+   :prove))
 (in-package :cl-journal-test)
 
 ;; NOTE: To run this test file, execute `(asdf:test-system :cl-journal)' in your Lisp.
@@ -145,6 +146,35 @@
         (is itemid 50)
         (is time "2018-02-27 20:45:36")
         )))
+
+  (subtest "get-unfetched-item-ids"
+
+    (subtest "trivial calls"
+
+      (with-dynamic-stubs ((cl-journal.lj-api::lj-syncitems
+                            (lambda (&rest rest)
+                              '(:COUNT 0 :TOTAL 0 :SYNCITEMS ()))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store nil)))
+            (list nil nil)))
+
+      (with-dynamic-stubs ((cl-journal.lj-api::lj-syncitems
+                            (lambda (&rest rest)
+                              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                                  '(:COUNT 1
+                                    :TOTAL 1
+                                    :SYNCITEMS (
+                                                (:TIME "2018-02-27 20:45:36"
+                                                  :ACTION "create" :ITEM "L-50"))
+                                    )
+                                  nil))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store nil)))
+            (list (list 50)  "2018-02-27 20:45:36")))
+      )
+    )
 
   )
 

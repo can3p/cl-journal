@@ -11,7 +11,8 @@ This file is a part of cl-journal project.
   :author "Dmitry Petrov <dpetroff@gmail.com>"
   :license "Public Domain"
   :depends-on (:cl-journal
-               :prove)
+               :prove
+               :mockingbird)
   :components ((:module "t"
                 :components
                 ((:test-file "cl-journal"))))
