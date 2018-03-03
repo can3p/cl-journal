@@ -250,13 +250,27 @@
                                &key (num-to-fetch +number-items-to-fetch+))
   "Given current state of store fetch next num-to-fetch
    items that need to be synced. Returns this number
-   or lest if that's all that is available"
+   or less if that's all that is available as well as timestamp
+   of last seen event, so that we can start from it on next iteration"
   (labels
-      ((sync-more (l ts)
+      (
+       (to-values (item)
+         (multiple-value-bind (itemid time)
+             (syncitems-item-data item)
+           (list itemid time)))
+
+       (get-return-values (l)
+         (let* ((parsed-list (mapcar #'to-values l))
+                (last-item (car (reverse parsed-list))))
+           (values
+            (mapcar #'car parsed-list)
+            (cadr last-item))))
+
+       (sync-more (l ts)
          (cond
            ((> (length l) num-to-fetch)
-            (subseq l 0 num-to-fetch))
-           ((= (length l) num-to-fetch) l)
+            (get-return-values (subseq l 0 num-to-fetch)))
+           ((= (length l) num-to-fetch) (get-return-values l))
            (t
             (let* ((orig-list (-<> ts
                                    (lj-syncitems)
