@@ -159,20 +159,118 @@
               (create-stub-store nil)))
             (list nil nil)))
 
-      (with-dynamic-stubs ((cl-journal.lj-api::lj-syncitems
-                            (lambda (&rest rest)
-                              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                                  '(:COUNT 1
-                                    :TOTAL 1
-                                    :SYNCITEMS (
-                                                (:TIME "2018-02-27 20:45:36"
-                                                  :ACTION "create" :ITEM "L-50"))
-                                    )
-                                  nil))))
+      (with-dynamic-stubs
+          ((cl-journal.lj-api::lj-syncitems
+            (lambda (&rest rest)
+              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                  '(:COUNT 1 :TOTAL 1
+                    :SYNCITEMS
+                    (
+                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+                     ))
+                  nil))))
         (is (multiple-value-list
              (cl-journal.lj-api::get-unfetched-item-ids
               (create-stub-store nil)))
             (list (list 50)  "2018-02-27 20:45:36")))
+
+      (with-dynamic-stubs
+          ((cl-journal.lj-api::lj-syncitems
+            (lambda (&rest rest)
+              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                  '(:COUNT 1 :TOTAL 1
+                    :SYNCITEMS
+                    (
+                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+                     ))
+                  nil))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store
+               (create-stub-event 50 "2018-02-28 20:45:36")
+               )))
+            (list nil nil)))
+
+      (with-dynamic-stubs
+          ((cl-journal.lj-api::lj-syncitems
+            (lambda (&rest rest)
+              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                  '(:COUNT 1 :TOTAL 1
+                    :SYNCITEMS
+                    (
+                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+                     ))
+                  nil))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store
+               (create-stub-event 50 "2018-02-26 20:45:36")
+               )))
+            (list (list 50)  "2018-02-27 20:45:36")))
+
+      (with-dynamic-stubs
+          ((cl-journal.lj-api::lj-syncitems
+            (lambda (&rest rest)
+              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                  '(:COUNT 1 :TOTAL 1
+                    :SYNCITEMS
+                    (
+                     (:TIME "2018-02-25 20:45:36" :ACTION "create" :ITEM "L-50")
+                     (:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+                     ))
+                  nil))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store
+               (create-stub-event 50 "2018-02-26 20:45:36")
+               )))
+            (list (list 50)  "2018-02-27 20:45:36")))
+
+      (with-dynamic-stubs
+          ((cl-journal.lj-api::lj-syncitems
+            (lambda (&rest rest)
+              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                  '(:COUNT 1 :TOTAL 1
+                    :SYNCITEMS
+                    (
+                     (:TIME "2018-02-25 20:45:36" :ACTION "create" :ITEM "L-51")
+                     (:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+                     ))
+                  nil))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store
+               (create-stub-event 50 "2018-02-26 20:45:36")
+               )))
+            (list (list 51 50)  "2018-02-27 20:45:36")))
+
+      (with-dynamic-stubs
+          ((cl-journal.lj-api::lj-syncitems
+            (lambda (&rest rest)
+              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                  '(:COUNT 1 :TOTAL 1
+                    :SYNCITEMS
+                    (
+                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+                     ))
+                  nil))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store
+               (create-stub-event 51 "2018-02-26 20:45:36")
+               )))
+            (list (list 50)  "2018-02-27 20:45:36")))
+
+      (with-dynamic-stubs
+          ((cl-journal.lj-api::lj-syncitems
+            (lambda (&rest rest)
+              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
+                  '(:COUNT 0 :TOTAL 0)
+                  nil))))
+        (is (multiple-value-list
+             (cl-journal.lj-api::get-unfetched-item-ids
+              (create-stub-store nil)))
+            (list nil nil)))
       )
     )
 
