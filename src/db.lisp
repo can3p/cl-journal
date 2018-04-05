@@ -34,6 +34,7 @@
    :updated-at
    :ignored-at
    :get-last-published-post
+   :refill-store
    :merge-events
    :draft)
   )
@@ -343,9 +344,17 @@
    (last-post-ts :initform nil :accessor last-post-ts)
    ))
 
+(defmethod to-list ((store <store>))
+  `(:events ,(events store)
+    :last-post-ts ,(last-post-ts db)))
+
 (defun merge-events (new-events last-item-ts)
   (setf (events store)
         (concatenate 'list
                      (events store)
                      new-events))
   (setf (last-post-ts store) last-item-ts))
+
+(defun refill-store (store l)
+  (setf (events store) (getf l :events))
+  (setf (last-post-ts store) (getf l :last-post-ts)))

@@ -3,7 +3,11 @@
   (:use :cl)
   (:import-from :uiop/os :getcwd)
   (:import-from :cl-markdown :markdown)
-  (:export :parse-post-file :read-file :get-markdown-files))
+  (:export
+   :parse-post-file
+   :read-file
+   :read-parse-file
+   :get-markdown-files))
 
 (in-package :cl-journal.file-api)
 
@@ -15,6 +19,12 @@
     (loop for line = (read-line stream nil)
           while line
           collect line)))
+
+(defun read-parse-file (file-path cb)
+  (if (probe-file file-path)
+      (with-open-file (in file-path)
+        (with-standard-io-syntax
+          (funcall cb (read in))))))
 
 (defun parse-post-file (filename)
   (let ((l (read-file filename)))
