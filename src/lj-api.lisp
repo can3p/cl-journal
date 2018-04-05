@@ -26,6 +26,7 @@
    :<store>
    :events
    :fetch-store
+   :merge-events
    :login
    :service-url
    :service-endpoint
@@ -179,21 +180,6 @@
 ;;    of the last one from syncitems call as last sync timestamp
 ;; 9. Goto 1
 
-;; @TODO: actually implement the code
-;; (defmethod fetch-posts ((store <store>))
-;;   (let* ((new-itemids (get-unfetched-item-ids store)))
-;;     (when (> (length new-itemids) 0)
-;;       (destructruing-bind (new-events sync-ts)
-;;                           (fetch-events (last-fetched-ts store))
-;;                           (merge-events store new-events sync-ts))
-;;       (fetch-posts store))))
-
-;; take last-post-ts from the store
-;; call sync posts
-;; filter out comments and posts that are already in db
-;; and have sync date later than last-post-ts
-;; repeat the process till nothing is left or we have a
-;; decent amount of items
 (defconstant +number-items-to-fetch+ 100)
 
 (defun syncitems-post-p (item)
@@ -304,3 +290,23 @@
                        (sync-more <> new-ts))))))))
     (sync-more nil (last-post-ts store))))
 
+
+;; take last-post-ts from the store
+;; call sync posts
+;; filter out comments and posts that are already in db
+;; and have sync date later than last-post-ts
+;; repeat the process till nothing is left or we have a
+;; decent amount of items
+;; @TODO: actually implement the code
+(defmethod fetch-posts ((store <store>))
+  "Fetch all new items from remote service since last-fetched-ts
+   of the store"
+  (destructruing-bind
+   (new-itemids last-item-ts) (get-unfetched-item-ids store)
+   (cond
+     ((null new-itemids) store)
+     (t (let ((new-events (-<> new-itemids
+                             (lj-getevents)
+                             (getf <> :events))))
+          (merge-events store new-events last-item-ts)
+          (fetch-posts store))))))

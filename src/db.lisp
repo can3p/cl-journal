@@ -34,6 +34,7 @@
    :updated-at
    :ignored-at
    :get-last-published-post
+   :merge-events
    :draft)
   )
 
@@ -341,3 +342,10 @@
    (events :initform nil :accessor events)
    (last-post-ts :initform nil :accessor last-post-ts)
    ))
+
+(defun merge-events (new-events last-item-ts)
+  (setf (events store)
+        (concatenate 'list
+                     (events store)
+                     new-events))
+  (setf (last-post-ts store) last-item-ts))
