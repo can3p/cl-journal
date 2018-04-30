@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+* 2018-04-30 Fetch functionality! Technically you can get all your posts now
+
 ## 0.5.2
 
 * 2018-02-22 Fix livejournal service initialization, which resulted in wrong service endpoint saved in config
