@@ -36,6 +36,7 @@
    :get-last-published-post
    :refill-store
    :merge-events
+   :fetch-store
    :draft)
   )
 

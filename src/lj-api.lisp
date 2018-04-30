@@ -39,6 +39,7 @@
    :posts)
   (:export :publish-post
            :update-post
+           :fetch-posts
            :delete-post
 ))
 
@@ -301,7 +302,7 @@
 (defmethod fetch-posts ((store <store>))
   "Fetch all new items from remote service since last-fetched-ts
    of the store"
-  (destructruing-bind
+  (destructuring-bind
    (new-itemids last-item-ts) (get-unfetched-item-ids store)
    (cond
      ((null new-itemids) store)
