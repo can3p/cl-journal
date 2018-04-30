@@ -139,6 +139,15 @@ This list is not structured in a particular order
   If you don't know what that means and want to have your service supported
   consider opening a [github issue](https://github.com/can3p/cl-journal/issues).
 
+- *I cannot fetch posts, client throws stacktrace in my face and complains about encodings. WTF?*
+
+  Your blog is old enough to have posts written in non unicode encoding.
+  You can go to [encoding](https://www.livejournal.com/settings/?c=OldEncoding)
+  page a try your luck by choosing one of the encodings there. If you were
+  particularly lucky to write posts in several non unicode encodings
+  you might be out of luck for now. Feel free to make a pull request and
+  add support for your case.
+
 - *How can I help?*
 
   Pull requests are definitely welcome, please check out [a source
