@@ -67,6 +67,8 @@
 ;; source of wisdom - https://github.com/apparentlymart/livejournal/blob/master/cgi-bin/ljprotocol.pl
 (defun lj-getevents (itemids)
   (let* ((c (-<> (list
+                  ;; ver 1 is required for api to work
+                  :ver 1
                   ;; this gives us lj-embeds with video id, that we can later
                   ;; convert to something meaningful
                   :get_video_ids 1
@@ -302,7 +304,7 @@
 (defmethod fetch-posts ((store <store>))
   "Fetch all new items from remote service since last-fetched-ts
    of the store"
-  (destructuring-bind
+  (multiple-value-bind
    (new-itemids last-item-ts) (get-unfetched-item-ids store)
    (cond
      ((null new-itemids) store)

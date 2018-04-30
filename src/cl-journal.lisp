@@ -193,5 +193,5 @@
 
 (defun fetch-updated-posts ()
   (let ((store (restore-source-posts (fetch-store *posts*))))
-    (fetch-posts store)
+    (fetch-posts *posts*)
     (save-source-posts store)))

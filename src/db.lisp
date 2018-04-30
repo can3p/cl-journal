@@ -347,9 +347,9 @@
 
 (defmethod to-list ((store <store>))
   `(:events ,(events store)
-    :last-post-ts ,(last-post-ts db)))
+    :last-post-ts ,(last-post-ts store)))
 
-(defun merge-events (new-events last-item-ts)
+(defun merge-events (store new-events last-item-ts)
   (setf (events store)
         (concatenate 'list
                      (events store)
