@@ -13,6 +13,7 @@
            :publish-modified-files
            :unpublish-deleted-files
            :restore-posts
+           :fetch-updated-posts
            :lookup-file-url
            :edit-new-post
            :print-status
@@ -21,8 +22,11 @@
 
 (in-package :cl-journal)
 
-(defvar *posts* nil)
-(defvar *posts-file* "posts.lisp")
+(defvar *posts* nil "Holds current instance of posts database")
+(defvar *posts-file* "posts.lisp" "Default name of posts file")
+(defvar *source-posts-file* "source-posts.lisp"
+  "Default name of source posts file. This file will contain
+   a dump of all information fetched from the remote service")
 
 ;; update db after any actions on posts
 (defmethod publish-post :after ((db <db>) (post-file <post-file>))
@@ -42,10 +46,23 @@
       (pprint (to-list *posts*) out))))
 
 (defun restore-posts ()
-  (if (probe-file *posts-file*)
-      (with-open-file (in *posts-file*)
-        (with-standard-io-syntax
-          (setf *posts* (create-db-from-list (read in)))))))
+  (read-parse-file *posts-file*
+                   #'(lambda (l)
+                       (setf *posts* (create-db-from-list l))
+                       )))
+
+(defun restore-source-posts (store)
+  (read-parse-file *source-posts-file*
+                   #'(lambda (l)
+                       (refill-store store l)))
+  store)
+
+(defun save-source-posts (store)
+  (with-open-file (out *source-posts-file*
+                       :direction :output
+                       :if-exists :supersede)
+    (with-standard-io-syntax
+      (pprint (to-list store) out))))
 
 (defun setup (service)
   (if (restore-posts) (format t "db file exists, remove it to recreate~%")
@@ -173,3 +190,8 @@
                                                   (cl-journal.db:url post))))
                               (if (y-or-n-p prompt)
                                   (delete-post *posts* post)))))))
+
+(defun fetch-updated-posts ()
+  (let ((store (restore-source-posts (fetch-store *posts*))))
+    (fetch-posts *posts*)
+    (save-source-posts store)))

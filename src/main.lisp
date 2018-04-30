@@ -31,6 +31,10 @@ Commands:
         Find new posts and publish them. Drafts will be skipped client
         will prompt before publishing every file.
 
+    fetch
+        Fetch all the posts from the server from the moment of last
+        update. This action will not merge posts.
+
     status
         Display the list with filenames of all drafts or files that
         are out of sync with blog service.
@@ -65,6 +69,10 @@ Commands:
                                   (publish-modified-files)
                                   (unpublish-deleted-files)
                                   ))
+        ((equal command "fetch") (progn
+                                   (restore-posts)
+                                   (fetch-updated-posts)
+                                   ))
         ((equal command "url") (if arg
                                    (progn
                                      (restore-posts)
