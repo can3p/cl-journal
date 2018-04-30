@@ -27,6 +27,7 @@ find.
 ## Features
 
 * Create posts as simple markdown files
+* Fetch posts from the server and store it in a row format (no merge functionality)
 * Privacy, Tags, Music, Location and Mood fields are supported
 * Links to files in the repo resolve to links to relevant posts in the blog
 * Update/removal of posts is supported when relevant file is modified/removed

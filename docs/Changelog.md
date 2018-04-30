@@ -4,6 +4,10 @@ title: Changelog
 
 ## Not released yet
 
+* Nothing to release for now
+
+## 0.6.0
+
 * 2018-04-30 Fetch functionality! Technically you can get all your posts now
 
 ## 0.5.2
