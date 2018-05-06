@@ -76,11 +76,11 @@ Commands:
                                   ))
         ((equal command "fetch") (progn
                                    (restore-posts)
-                                   (merge-fetched-posts)
-                                   ))
-        ((equal command "fetch") (progn
-                                   (restore-posts)
                                    (fetch-updated-posts)
+                                   ))
+        ((equal command "merge") (progn
+                                   (restore-posts)
+                                   (merge-fetched-posts)
                                    ))
         ((equal command "url") (if arg
                                    (progn
