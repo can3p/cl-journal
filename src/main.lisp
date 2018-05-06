@@ -35,6 +35,11 @@ Commands:
         Fetch all the posts from the server from the moment of last
         update. This action will not merge posts.
 
+    merge
+        Check all fetched remote posts and in case they do not
+        exist locally or were changed after creation create
+        local files representing them
+
     status
         Display the list with filenames of all drafts or files that
         are out of sync with blog service.
@@ -69,6 +74,10 @@ Commands:
                                   (publish-modified-files)
                                   (unpublish-deleted-files)
                                   ))
+        ((equal command "fetch") (progn
+                                   (restore-posts)
+                                   (merge-fetched-posts)
+                                   ))
         ((equal command "fetch") (progn
                                    (restore-posts)
                                    (fetch-updated-posts)

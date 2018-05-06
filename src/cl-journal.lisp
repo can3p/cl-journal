@@ -14,6 +14,7 @@
            :unpublish-deleted-files
            :restore-posts
            :fetch-updated-posts
+           :merge-fetched-posts
            :lookup-file-url
            :edit-new-post
            :print-status
@@ -195,3 +196,8 @@
   (let ((store (restore-source-posts (fetch-store *posts*))))
     (fetch-posts *posts*)
     (save-source-posts store)))
+
+(defun merge-fetched-posts ()
+  (let ((store (restore-source-posts (fetch-store *posts*))))
+    (declare (ignore store))
+    (error "Merge functionality is not there yet")))
