@@ -15,7 +15,10 @@ This file is a part of cl-journal project.
                :mockingbird)
   :components ((:module "t"
                 :components
-                ((:test-file "cl-journal"))))
+                (
+                 (:test-file "cl-journal")
+                 (:test-file "lj-parse-response")
+                 )))
   :description "Test system for cl-journal"
 
   :defsystem-depends-on (:prove-asdf)
