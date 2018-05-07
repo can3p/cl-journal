@@ -254,12 +254,18 @@
              (syncitems-item-data item)
            (list itemid time)))
 
+       (to-hash-table (l)
+         (let ((ht (make-hash-table :test 'equal)))
+           (dolist (item l ht)
+             (setf (gethash (car item) ht) (cadr item)))))
+
        (get-return-values (l)
          (let* ((parsed-list (mapcar #'to-values l))
                 (last-item (car (reverse parsed-list))))
            (values
             (mapcar #'car parsed-list)
-            (cadr last-item))))
+            (cadr last-item)
+            (to-hash-table parsed-list))))
 
        (sync-more (l ts)
          (cond
@@ -293,6 +299,9 @@
                        (sync-more <> new-ts))))))))
     (sync-more nil (last-post-ts store))))
 
+(defun enrich-with-ts (event ht)
+  (list :event event
+        :server-ts (gethash (getf event :itemid) ht)))
 
 ;; take last-post-ts from the store
 ;; call sync posts
@@ -305,11 +314,12 @@
   "Fetch all new items from remote service since last-fetched-ts
    of the store"
   (multiple-value-bind
-   (new-itemids last-item-ts) (get-unfetched-item-ids store)
+   (new-itemids last-item-ts ht) (get-unfetched-item-ids store)
    (cond
      ((null new-itemids) store)
      (t (let ((new-events (-<> new-itemids
                              (lj-getevents)
-                             (getf <> :events))))
+                             (getf <> :events)
+                             (mapcar #'(lambda (x) (enrich-with-ts x ht)) <>))))
           (merge-events store new-events last-item-ts)
           (fetch-posts store))))))

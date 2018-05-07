@@ -68,7 +68,7 @@
 ;; in three:
 
 ;; 1) Whenever we create/update post, we poke livejournal server to get
-;;    a timestamp and store it along the post.
+;;    a timestamp and store it along the post. [DONE]
 
 ;; 2) Whenever we fetch updated items, we store update timestamp of every
 ;;    one of them along with post response.

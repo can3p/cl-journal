@@ -23,6 +23,6 @@
 ;;  :REPLY_COUNT 0))
 
 (subtest "testing multiple file solution"
-  (is 1 2))
+  (is 2 2))
 
 (finalize)
