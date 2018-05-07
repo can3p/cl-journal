@@ -52,3 +52,57 @@
 (defun get-markdown-files ()
   (mapcar #'(lambda (x) (enough-namestring x (getcwd)))
           (directory "./**/*.md")))
+
+;;;; Merge fuctionality
+
+What fact do we have available to make sync work?
+
+1) We can get update since some ts. Ts should be server time.
+   We get notifications about new and updated posts.
+
+2) There is no nonhacky way of getting update ts from the
+   post response by itself, however lj-getevents returns sync timestamp
+   to us
+
+Sounds like we have enough information to do a sync! We can split task
+in three:
+
+1) Whenever we create/update post, we poke livejournal server to get
+   a timestamp and store it along the post.
+
+2) Whenever we fetch updated items, we store update timestamp of every
+   one of them along with post response.
+
+Given these two last step is easy!
+
+3) Whenever we merge we take all raw posts that either do not exist as
+   markdown or markdown has update ts ealier then raw server response
+   and convert raw response to the markdown which is then save two the disk
+   potentially replacing old file.
+
+Sounds like a plan! The only two words that need clarification are `convert`
+and `save` on a disk. Let's start with `save`.
+
+How can we get the name?
+
+1) If particular itemid is already in db use the name from there.
+
+2) If not, take date from event time as a base. If title exists,
+   slagify it the best effort.
+
+3) Filename exists? Add -N to the end starting from 1 onwards till we
+find an empty spot.
+
+How do we convert?
+
+1) We walk over the structure. Atom is either a number or a string
+   or a list with car :base64 and cdr containing some base64 encoded
+   utf8 text.
+
+2) We save title as is, map fields to the supported flag.
+
+3) Flags can be marked as ignored, otherwise they cause a restart.
+
+4) Body text is markdownified, lj embeds are unwrapped.
+
+That's it
