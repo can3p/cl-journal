@@ -92,6 +92,26 @@
                   (cl-journal.lj-api::get-unfetched-item-ids store))))
     (is (subseq result 0 2) (list items date))))
 
+(defmacro with-mocked-calls (func data &rest body)
+  "This function is necessary to emulate behaviour of
+   function that has side effects. Every subsequent
+   call to the function will return next item from the
+   data list, except the last one which will be returned
+   endlessly"
+  `(with-dynamic-stubs
+       ((,func
+         (lambda (&rest rest)
+           (declare (ignore rest))
+           (cond
+             ,@(loop for resp in data
+                    for i from 1 to (length data)
+                    collect
+                    (if (equal i (length data))
+                        `(t (quote ,resp))
+                        `((equal (call-times-for (quote ,func)) ,i)
+                          (quote ,resp))))))))
+     ,@body))
+
 
 (subtest "get-unfetched-item-ids"
 
@@ -162,36 +182,35 @@
 
     (subtest "trivial calls"
 
-      (with-dynamic-stubs ((cl-journal.lj-api::lj-syncitems
-                            (lambda (&rest rest)
-                              (declare (ignore rest))
-                              '(:COUNT 0 :TOTAL 0 :SYNCITEMS ()))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 0 :TOTAL 0 :SYNCITEMS ())
+         )
         (test-get-unfetched-item-ids nil nil nil))
 
-      (with-dynamic-stubs
-          ((cl-journal.lj-api::lj-syncitems
-            (lambda (&rest rest)
-              (declare (ignore rest))
-              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                  '(:COUNT 1 :TOTAL 1
-                    :SYNCITEMS
-                    (
-                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
-                     ))
-                  nil))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 1 :TOTAL 1
+          :SYNCITEMS
+          (
+           (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+           ))
+         nil
+         )
         (test-get-unfetched-item-ids nil (list 50)  "2018-02-27 20:45:36"))
 
-      (with-dynamic-stubs
-          ((cl-journal.lj-api::lj-syncitems
-            (lambda (&rest rest)
-              (declare (ignore rest))
-              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                  '(:COUNT 1 :TOTAL 1
-                    :SYNCITEMS
-                    (
-                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
-                     ))
-                  nil))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 1 :TOTAL 1
+          :SYNCITEMS
+          (
+           (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+           ))
+         nil
+         )
         (test-get-unfetched-item-ids
          (list
           (create-stub-event 50 "2018-02-28 20:45:36")
@@ -199,83 +218,78 @@
          nil
          nil))
 
-      (with-dynamic-stubs
-          ((cl-journal.lj-api::lj-syncitems
-            (lambda (&rest rest)
-              (declare (ignore rest))
-              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                  '(:COUNT 1 :TOTAL 1
-                    :SYNCITEMS
-                    (
-                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
-                     ))
-                  nil))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 1 :TOTAL 1
+          :SYNCITEMS
+          (
+           (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+           ))
+         nil
+         )
         (test-get-unfetched-item-ids
          (list
           (create-stub-event 50 "2018-02-26 20:45:36")
           )
          (list 50) "2018-02-27 20:45:36"))
 
-      (with-dynamic-stubs
-          ((cl-journal.lj-api::lj-syncitems
-            (lambda (&rest rest)
-              (declare (ignore rest))
-              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                  '(:COUNT 1 :TOTAL 1
-                    :SYNCITEMS
-                    (
-                     (:TIME "2018-02-25 20:45:36" :ACTION "create" :ITEM "L-50")
-                     (:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
-                     ))
-                  nil))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 1 :TOTAL 1
+          :SYNCITEMS
+          (
+           (:TIME "2018-02-25 20:45:36" :ACTION "create" :ITEM "L-50")
+           (:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+           ))
+         nil
+         )
         (test-get-unfetched-item-ids
          (list
           (create-stub-event 50 "2018-02-26 20:45:36")
          )
          (list 50) "2018-02-27 20:45:36"))
 
-      (with-dynamic-stubs
-          ((cl-journal.lj-api::lj-syncitems
-            (lambda (&rest rest)
-              (declare (ignore rest))
-              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                  '(:COUNT 1 :TOTAL 1
-                    :SYNCITEMS
-                    (
-                     (:TIME "2018-02-25 20:45:36" :ACTION "create" :ITEM "L-51")
-                     (:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
-                     ))
-                  nil))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 1 :TOTAL 1
+          :SYNCITEMS
+          (
+           (:TIME "2018-02-25 20:45:36" :ACTION "create" :ITEM "L-51")
+           (:TIME "2018-02-27 20:45:36" :ACTION "update" :ITEM "L-50")
+           ))
+         nil
+         )
         (test-get-unfetched-item-ids
          (list
           (create-stub-event 50 "2018-02-26 20:45:36")
          )
          (list 51 50) "2018-02-27 20:45:36"))
 
-      (with-dynamic-stubs
-          ((cl-journal.lj-api::lj-syncitems
-            (lambda (&rest rest)
-              (declare (ignore rest))
-              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                  '(:COUNT 1 :TOTAL 1
-                    :SYNCITEMS
-                    (
-                     (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
-                     ))
-                  nil))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 1 :TOTAL 1
+          :SYNCITEMS
+          (
+           (:TIME "2018-02-27 20:45:36" :ACTION "create" :ITEM "L-50")
+           ))
+         nil
+         )
         (test-get-unfetched-item-ids
          (list
           (create-stub-event 51 "2018-02-26 20:45:36")
          )
          (list 50)  "2018-02-27 20:45:36"))
 
-      (with-dynamic-stubs
-          ((cl-journal.lj-api::lj-syncitems
-            (lambda (&rest rest)
-              (declare (ignore rest))
-              (if (equal 1 (call-times-for 'cl-journal.lj-api::lj-syncitems))
-                  '(:COUNT 0 :TOTAL 0)
-                  nil))))
+      (with-mocked-calls
+        cl-journal.lj-api::lj-syncitems
+        (
+         (:COUNT 0 :TOTAL 0)
+         nil
+         )
         (test-get-unfetched-item-ids
          nil
          nil nil))
