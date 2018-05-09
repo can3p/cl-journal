@@ -301,7 +301,7 @@
 
 (defun enrich-with-ts (event ht)
   (list :event event
-        :server-ts (gethash (getf event :itemid) ht)))
+        :sync-ts (gethash (getf event :itemid) ht)))
 
 ;; take last-post-ts from the store
 ;; call sync posts
