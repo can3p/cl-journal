@@ -37,6 +37,9 @@
    :refill-store
    :merge-events
    :fetch-store
+   :to-hash-table
+   :server-changed-at
+   :itemid
    :draft)
   )
 
@@ -114,6 +117,7 @@
    (updated-at :initarg :updated-at :initform (get-universal-time) :accessor updated-at)
    (created-at :initarg :created-at :initform (get-universal-time) :reader created-at)
    (ignored-at :initarg :ignored-at :initform nil :accessor ignored-at)
+   (server-changed-at :initarg :server-changed-at :initform nil :accessor server-changed-at)
    (filename :initarg :filename :reader filename)
    (journal :initarg :journal :initform nil :reader journal)
    (itemid :initarg :itemid :reader itemid)
@@ -184,6 +188,7 @@
    :created-at (created-at post)
    :updated-at (updated-at post)
    :ignored-at (ignored-at post)
+   :server-changed-at (server-changed-at post)
    :filename (filename post)
    :journal (journal post)
    ))
@@ -348,6 +353,17 @@
 (defmethod to-list ((store <store>))
   `(:events ,(events store)
     :last-post-ts ,(last-post-ts store)))
+
+(defgeneric to-hash-table (source))
+
+(defmethod to-hash-table ((store <store>))
+  (let ((ht (make-hash-table :test 'equal)))
+    (dolist (item (events store) ht)
+      (let ((itemid (-<> item
+                         (getf <> :event)
+                         (getf <> :itemid)))
+            (ts (getf item :sync-ts)))
+        (setf (gethash itemid ht) ts)))))
 
 (defun merge-events (store new-events last-item-ts)
   (setf (events store)

@@ -14,6 +14,7 @@
            :unpublish-deleted-files
            :restore-posts
            :fetch-updated-posts
+           :mark-as-pulled
            :merge-fetched-posts
            :lookup-file-url
            :edit-new-post
@@ -197,7 +198,19 @@
     (fetch-posts *posts*)
     (save-source-posts store)))
 
-(defun merge-fetched-posts ()
+(defun mark-as-pulled ()
+  (let ((ht (-<> *posts*
+                 (fetch-posts)
+                 (restore-source-posts)
+                 (to-hash-table))))
+    (loop for post in (posts *posts*) do
+      (let ((ts (gethash (itemid post) ht)))
+        (if (null ts)
+            (format t "Item ~a was not fetched yet, run cl-journal fetch first~%" (itemid post))
+            (setf (server-changed-at post) ts))))
+    (save-posts)))
+
+#+()(defun merge-fetched-posts ()
   (let ((store (restore-source-posts (fetch-store *posts*))))
     (declare (ignore store))
     (error "Merge functionality is not there yet")))

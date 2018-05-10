@@ -2,6 +2,7 @@
 (defpackage cl-journal-test
   (:use :cl
    :cl-journal
+   :cl-journal.db
    :mockingbird
    :cl-arrows
    :prove))
@@ -111,6 +112,19 @@
                         `((equal (call-times-for (quote ,func)) ,i)
                           (quote ,resp))))))))
      ,@body))
+
+(subtest "merge-fetched-posts"
+
+  (subtest "to-hash-table"
+
+    (let ((ht (to-hash-table
+               (create-stub-store
+                (create-stub-event 1 "2018-01-02 11:22:33")
+                (create-stub-event 2 "2016-01-02 11:22:33")))))
+      (is (gethash 1 ht) "2018-01-02 11:22:33")
+      (is (gethash 2 ht) "2016-01-02 11:22:33")
+      (is (gethash 3 ht) nil)))
+  )
 
 
 (subtest "get-unfetched-item-ids"

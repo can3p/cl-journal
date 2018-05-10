@@ -35,6 +35,10 @@ Commands:
         Fetch all the posts from the server from the moment of last
         update. This action will not merge posts.
 
+    mark-as-pulled
+        Pretend that all local posts are uptodate comparing to the
+        remote and save remote timestamps as a proof
+
     merge
         Check all fetched remote posts and in case they do not
         exist locally or were changed after creation create
@@ -77,6 +81,10 @@ Commands:
         ((equal command "fetch") (progn
                                    (restore-posts)
                                    (fetch-updated-posts)
+                                   ))
+        ((equal command "mark-as-pulled") (progn
+                                   (restore-posts)
+                                   (mark-as-pulled)
                                    ))
         ((equal command "merge") (progn
                                    (restore-posts)
