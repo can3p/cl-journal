@@ -7,6 +7,9 @@
                 :get-date-struct)
   (:import-from :cl-journal.file-api :parse-post-file)
   (:import-from :alexandria :curry :compose)
+  (:import-from :local-time
+   :timestamp>
+   :parse-timestring)
   (:export :<post-file>
    :<post>
    :*raw-text*
@@ -21,6 +24,7 @@
    :events
    :service-endpoint
    :service-url
+   :older-than-p
    :to-list
    :get-by-fname
    :last-post-ts
@@ -128,6 +132,7 @@
 
 (defgeneric to-event-list (post &optional transform))
 (defgeneric to-xmlrpc-struct (post &optional transform is-deleted))
+(defgeneric to-hash-table (source))
 
 (defmethod print-object ((post <post>) stream)
   (format stream "<post filename:~a url:~a>~%" (filename post) (url post)))
@@ -153,6 +158,18 @@
 
 (defmethod deleted-p ((post <post>))
   (not (probe-file (filename post))))
+
+(defgeneric older-than-p (post ts))
+
+(defmethod older-than-p ((post <post>) ts)
+  (labels ((parse (ts)
+             (let
+                 ((local-time::*default-timezone* local-time::+utc-zone+))
+               (parse-timestring ts :date-time-separator #\Space))))
+    (or (not (server-changed-at post))
+        (timestamp>
+         (parse ts)
+         (parse (server-changed-at post))))))
 
 (defun create-post-from-xmlrpc-struct (struct fname journal)
   (make-instance '<post>
@@ -250,6 +267,11 @@
     :raw-text ,(raw-text db)
     :service-endpoint ,(service-endpoint db)
     :posts ,(mapcar #'to-list (posts db))))
+
+(defmethod to-hash-table ((db <db>))
+  (let ((ht (make-hash-table :test 'equal)))
+    (dolist (post (posts db) ht)
+        (setf (gethash (itemid post) ht) post))))
 
 (defmethod get-by-fname ((db <db>) fname)
   (find-if #'(lambda (post) (get-by-fname post fname))
@@ -353,8 +375,6 @@
 (defmethod to-list ((store <store>))
   `(:events ,(events store)
     :last-post-ts ,(last-post-ts store)))
-
-(defgeneric to-hash-table (source))
 
 (defmethod to-hash-table ((store <store>))
   (let ((ht (make-hash-table :test 'equal)))

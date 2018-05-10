@@ -107,6 +107,26 @@
        (mapcar #'filename)
        ))
 
+(defun get-merge-candidates (db)
+  (let ((store (restore-source-posts (fetch-store db)))
+        (ht (to-hash-table *posts*)))
+    (loop for event in (events store)
+          for itemid = (getf (getf event :event) :itemid)
+          for post = (gethash itemid ht)
+          when (or (not post)
+                   (older-than-p post (getf event :sync-ts)))
+            collect
+            (progn
+              (if (null post)
+                  (format nil "~a - ~a"
+                          itemid
+                          (getf (getf event :event) :url))
+                  (format nil "~a - ~a (~a)"
+                          itemid
+                          (getf (getf event :event) :url)
+                          (filename post))
+                  )))))
+
 (defun lookup-file-url (fname)
   (let ((obj (get-by-fname *posts* fname)))
     (when obj (url obj))))
@@ -147,6 +167,11 @@
   "There a drafts file~%"
   "No drafts found~%")
 
+(with-files fetched (get-merge-candidates *posts*)
+  "There are ~a fetched posts to merge~%"
+  "There a fetched post to merge~%"
+  "No fetched posts need to be merged~%")
+
 ;; some duplication is still there, right?
 (defun print-status ()
   (flet ((print-names (items)
@@ -157,7 +182,8 @@
     (with-draft-files #'print-string-names)
     (with-new-files #'print-names)
     (with-modified-files #'print-names)
-    (with-deleted-files #'print-names)))
+    (with-deleted-files #'print-names)
+    (with-fetched-files #'print-string-names)))
 
 (defun ignore-all ()
   (let ((ts (get-universal-time)))
