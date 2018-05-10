@@ -36,6 +36,7 @@
    :filename
    :journal
    :updated-at
+   :server-changed-at
    :posts)
   (:export :publish-post
            :update-post
@@ -77,6 +78,9 @@
                   :selecttype "multiple")
                  (add-challenge))))
     (rpc-call "LJ.XMLRPC.getevents" c)))
+
+(defun lj-get-server-ts ()
+  (getf (lj-getevents '(1000000)) :lastsync)) ;; something big enough to have empty lookup
 
 (defun lj-syncitems (&optional (lastsync nil))
   (let* ((c (-<> (list :ver 1)
@@ -145,6 +149,11 @@
   (set-credentials db)
   (let ((*raw-text* (raw-text db)))
     (let ((post (create-new-post post-file)))
+
+      ;; technically this is not true, but this
+      ;; timestamp can only be later then a honest
+      ;; one which is enough for the usecase
+      (setf (server-changed-at post) (lj-get-server-ts))
       (push post (posts db)))))
 
 (defgeneric delete-post (db post))
@@ -162,7 +171,13 @@
   (set-credentials db)
   (let ((*raw-text* (raw-text db)))
     (update-old-post post))
-  (setf (updated-at post) (get-universal-time)))
+  (setf (updated-at post) (get-universal-time))
+
+  ;; technically this is not true, but this
+  ;; timestamp can only be later then a honest
+  ;; one which is enough for the usecase
+  (setf (server-changed-at post) (lj-get-server-ts))
+  )
 
 (defgeneric fetch-posts (db))
 

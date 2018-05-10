@@ -71,7 +71,7 @@
 ;;    a timestamp and store it along the post. [DONE]
 
 ;; 2) Whenever we fetch updated items, we store update timestamp of every
-;;    one of them along with post response.
+;;    one of them along with post response. [DONE]
 
 ;; Given these two last step is easy!
 
