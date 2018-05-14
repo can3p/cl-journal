@@ -4,7 +4,12 @@ title: Changelog
 
 ## Not released yet
 
-* Nothing to release for now
+* 2018-05-10 Fetch functionality stores sync timestamps for every item for later
+  merging. Please remove source-posts.lisp file and run `cl-journal fetch` again.
+* 2018-05-10 Every new post/update post will store a server timestamp along the post
+  to make sync possible. Run `cl-journal fetch` and then `cl-journal mark-as-pulled`
+  to get your db up to date. This command assumes that all local posts are the
+  latest version available
 
 ## 0.6.0
 
