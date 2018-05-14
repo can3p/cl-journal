@@ -83,7 +83,7 @@
 ;; Sounds like a plan! The only two words that need clarification are `convert`
 ;; and `save` on a disk. Let's start with `save`.
 
-;; How can we get the name?
+;; How can we get the name? [DONE]
 
 ;; 1) If particular itemid is already in db use the name from there.
 
