@@ -127,6 +127,57 @@
   )
 
 
+(subtest "generate-unique-filename"
+
+  (subtest "empty db"
+    (let ((db (cl-journal.db::create-db-from-list
+               '(
+                 :version 2
+                 :posts (
+                 )))))
+      (is (cl-journal.db::generate-unique-filename
+           db "2018-01-01 11:22:33" "post tile")
+          "2018-01-01-post-tile.md"))
+    )
+
+  (subtest "non matching post"
+    (let ((db (cl-journal.db::create-db-from-list
+               '(
+                 :version 2
+                 :posts (
+                         (:ITEMID 56 :ANUM 0 :DITEMID 14336 :URL
+                          "http://1234.html" :CREATED-AT 3734113341
+                          :UPDATED-AT 3734113341 :IGNORED-AT NIL :SERVER-CHANGED-AT NIL :FILENAME
+                          "2018-04-30-test-sync.md" :JOURNAL NIL)
+                         )
+                 ))))
+      (is (cl-journal.db::generate-unique-filename
+           db "2018-01-01 11:22:33" "post tile")
+          "2018-01-01-post-tile.md"))
+    )
+
+  (subtest "several matching posts"
+    (let ((db (cl-journal.db::create-db-from-list
+               '(
+                 :version 2
+                 :posts (
+                         (:ITEMID 56 :ANUM 0 :DITEMID 14336 :URL
+                          "http://1234.html" :CREATED-AT 3734113341
+                          :UPDATED-AT 3734113341 :IGNORED-AT NIL :SERVER-CHANGED-AT NIL :FILENAME
+                          "2018-01-01-post-tile.md" :JOURNAL NIL)
+                         (:ITEMID 57 :ANUM 0 :DITEMID 14336 :URL
+                          "http://1234.html" :CREATED-AT 3734113341
+                          :UPDATED-AT 3734113341 :IGNORED-AT NIL :SERVER-CHANGED-AT NIL :FILENAME
+                          "2018-01-01-post-tile-2.md" :JOURNAL NIL)
+                         )
+                 ))))
+      (is (cl-journal.db::generate-unique-filename
+           db "2018-01-01 11:22:33" "post tile")
+          "2018-01-01-post-tile-3.md"))
+    )
+
+  )
+
 (subtest "get-unfetched-item-ids"
 
   (subtest "syncitems-post-p"

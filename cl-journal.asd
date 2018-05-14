@@ -23,6 +23,8 @@ This file is a part of cl-journal project.
                #:cl-markdown
                #:split-sequence
                #:cl-base64
+               #:cl-strings
+               #:cl-slug
                #:babel
                #:local-time
                #+sbcl :sb-introspect

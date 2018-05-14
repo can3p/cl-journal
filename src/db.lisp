@@ -7,6 +7,8 @@
                 :get-date-struct)
   (:import-from :cl-journal.file-api :parse-post-file)
   (:import-from :alexandria :curry :compose)
+  (:import-from :cl-strings :join :split)
+  (:import-from :cl-slug :slugify)
   (:import-from :local-time
    :timestamp>
    :parse-timestring)
@@ -276,6 +278,27 @@
 (defmethod get-by-fname ((db <db>) fname)
   (find-if #'(lambda (post) (get-by-fname post fname))
         (posts db)))
+
+(defun generate-unique-filename (db datetime base)
+  "Generate a filename that does not yet exist in the database
+   based on datetime (yyyy-mm-dd hh:mm:ss) and a base (any string).
+
+   Function will generate a a base name of the form <date>-<slug>.md
+   and in case such a filename already exist, will keep adding increasing
+   postfix numbers till it finds a vacant spot"
+  (labels ((gen-name (date slug counter)
+             (if (equal counter 1)
+                 (format nil "~a-~a.md" date slug)
+                 (format nil "~a-~a-~a.md" date slug counter))))
+
+    (let ((date (car (split datetime)))
+          (slug (slugify base))
+          (ht (to-hash-table db :key-sub #'filename)))
+
+      (loop with cnt = 0
+            for name = (gen-name date slug (incf cnt))
+            while (gethash name ht)
+            finally (return name)))))
 
 (defun get-last-published-post (db)
   (car (sort (posts db) #'> :key #'created-at)))
