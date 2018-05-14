@@ -132,7 +132,7 @@
 
 (defgeneric to-event-list (post &optional transform))
 (defgeneric to-xmlrpc-struct (post &optional transform is-deleted))
-(defgeneric to-hash-table (source))
+(defgeneric to-hash-table (source &key))
 
 (defmethod print-object ((post <post>) stream)
   (format stream "<post filename:~a url:~a>~%" (filename post) (url post)))
@@ -268,10 +268,10 @@
     :service-endpoint ,(service-endpoint db)
     :posts ,(mapcar #'to-list (posts db))))
 
-(defmethod to-hash-table ((db <db>))
+(defmethod to-hash-table ((db <db>) &key (key-sub #'itemid))
   (let ((ht (make-hash-table :test 'equal)))
     (dolist (post (posts db) ht)
-        (setf (gethash (itemid post) ht) post))))
+        (setf (gethash (funcall key-sub post) ht) post))))
 
 (defmethod get-by-fname ((db <db>) fname)
   (find-if #'(lambda (post) (get-by-fname post fname))
@@ -376,7 +376,7 @@
   `(:events ,(events store)
     :last-post-ts ,(last-post-ts store)))
 
-(defmethod to-hash-table ((store <store>))
+(defmethod to-hash-table ((store <store>) &key)
   (let ((ht (make-hash-table :test 'equal)))
     (dolist (item (events store) ht)
       (let ((itemid (-<> item
