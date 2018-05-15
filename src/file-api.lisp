@@ -3,10 +3,12 @@
   (:use :cl)
   (:import-from :uiop/os :getcwd)
   (:import-from :cl-markdown :markdown)
+  (:import-from :cl-journal.markdownify :markdownify)
   (:export
    :parse-post-file
    :read-file
    :read-parse-file
+   :parse-xml-response
    :get-markdown-files))
 
 (in-package :cl-journal.file-api)
@@ -52,6 +54,23 @@
 (defun get-markdown-files ()
   (mapcar #'(lambda (x) (enough-namestring x (getcwd)))
           (directory "./**/*.md")))
+
+
+(defun parse-xml-response (xml)
+  "Function takes output of the xml-rpc endpoint and turns it
+   in a list that can become <post-file> and <post> objects.
+   See test cases to get an understanding of cases covered"
+  (list :post (list
+                 :itemid (getf xml :itemid)
+                 :anum (getf xml :anum)
+                 :ditemid (getf xml :ditemid)
+                 :url (getf xml :url)
+                               )
+                 :post-file (list
+                             :title (getf xml :subject)
+                             :body (getf xml :event)
+                             :body-raw (markdownify (getf xml :event))
+                             )))
 
 ;;;; Merge fuctionality
 

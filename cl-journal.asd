@@ -25,6 +25,7 @@ This file is a part of cl-journal project.
                #:cl-base64
                #:cl-strings
                #:cl-slug
+               #:plump
                #:babel
                #:local-time
                #+sbcl :sb-introspect
@@ -34,6 +35,7 @@ This file is a part of cl-journal project.
                 (
                  (:file "magic-ed")
                  (:file "functions")
+                 (:file "markdownify")
                  (:file "settings" :depends-on ("functions" "db"))
                  (:file "markdown" :depends-on ("cl-journal"))
                  (:file "main" :depends-on ("cl-journal" "functions"))

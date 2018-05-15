@@ -1,9 +1,11 @@
 (in-package :cl-user)
-(defpackage lj-parse-response.cl-journal-test
+(defpackage lj-parse-response.cl-journal-test2
   (:use :cl
    :cl-journal
-   :prove))
-(in-package :lj-parse-response.cl-journal-test)
+        :prove)
+  (:import-from :cl-journal.file-api :parse-xml-response)
+  )
+(in-package :lj-parse-response.cl-journal-test2)
 
 (plan nil)
 
@@ -22,7 +24,32 @@
 ;;  "https://can3p-test.livejournal.com/14739.html" :EVENT_TIMESTAMP 1525615980
 ;;  :REPLY_COUNT 0))
 
-(subtest "testing multiple file solution"
-  (is 2 2))
+
+(subtest "parse-xml-response"
+
+  (subtest "dead simple case"
+    (let ((xml '(:ITEMID 56 :SUBJECT "test title" :EVENT
+   "<p>I want to ahve it fetched back </p>" :DITEMID 14336 :EVENTTIME
+   "2018-04-30 23:42:00" :PROPS
+   (:PERSONIFI_TAGS "nterms:yes" :INTERFACE "xml-rpc" :IMAGES_PROCESSED
+    1525124541 :GIVE_FEATURES 1)
+   :CAN_COMMENT 1 :LOGTIME "2018-04-30 21:42:21" :ANUM 0 :URL
+   "https://can3p-test.livejournal.com/14336.html" :EVENT_TIMESTAMP 1525131720
+   :REPLY_COUNT 0)))
+
+      (is (parse-xml-response xml)
+          '(:post (
+                   :itemid 56
+                   :anum 0
+                   :ditemid 14336
+                   :url "https://can3p-test.livejournal.com/14336.html"
+                   )
+            :post-file (
+                        :title "test title"
+                        :body "<p>I want to ahve it fetched back </p>"
+                        :body-raw "I want to ahve it fetched back"
+                        )
+            ))))
+  )
 
 (finalize)
