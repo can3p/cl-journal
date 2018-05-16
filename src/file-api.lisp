@@ -11,6 +11,8 @@
    :read-file
    :read-parse-file
    :parse-xml-response
+   :post-file-list-to-string
+   :save-text-file
    :get-markdown-files))
 
 (in-package :cl-journal.file-api)
@@ -115,6 +117,29 @@
                                       )
                                      (getf xml :props))
                       (getf xml :security)))))
+
+(defun post-file-list-to-string (post-file)
+  (with-output-to-string (out)
+    (when (getf post-file :title)
+      (format out "title: ~a~%" (getf post-file :title)))
+    (when (getf post-file :privacy)
+      (format out "privacy: ~a~%" (getf post-file :privacy)))
+    (when (getf post-file :fields)
+      (loop for (key value . rest)
+              on (getf post-file :fields)
+            by #'cddr
+            do
+               (format out "~a: ~a~%"
+                       (string-downcase (symbol-name key))
+                       value)))
+    (format out "~%~a" (getf post-file :body-raw))))
+
+(defun save-text-file (filename text)
+  (with-open-file (out filename
+                       :direction :output
+                       :if-exists :supersede)
+    (with-standard-io-syntax
+      (format out "~a" text))))
 
 ;;;; Merge fuctionality
 
