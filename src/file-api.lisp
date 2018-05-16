@@ -156,7 +156,7 @@
 ;; 3) Filename exists? Add -N to the end starting from 1 onwards till we
 ;; find an empty spot.
 
-;; How do we convert?
+;; How do we convert? [DONE]
 
 ;; 1) We walk over the structure. Atom is either a number or a string
 ;;    or a list with car :base64 and cdr containing some base64 encoded
