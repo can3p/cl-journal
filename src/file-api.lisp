@@ -1,9 +1,11 @@
 (in-package :cl-user)
 (defpackage cl-journal.file-api
-  (:use :cl)
+  (:use :cl :cl-arrows)
   (:import-from :uiop/os :getcwd)
   (:import-from :cl-markdown :markdown)
   (:import-from :cl-journal.markdownify :markdownify)
+  (:import-from :flexi-streams :octets-to-string)
+  (:import-from :cl-base64 :base64-string-to-usb8-array)
   (:export
    :parse-post-file
    :read-file
@@ -56,21 +58,63 @@
           (directory "./**/*.md")))
 
 
+(defun b64getf (obj field)
+  (let ((val (getf obj field)))
+    (if (and (consp val) (equal (car val) :base64))
+        (octets-to-string (base64-string-to-usb8-array
+                           (cadr val))
+                           :external-format :utf8)
+        val)))
+
 (defun parse-xml-response (xml)
   "Function takes output of the xml-rpc endpoint and turns it
    in a list that can become <post-file> and <post> objects.
    See test cases to get an understanding of cases covered"
-  (list :post (list
+  (labels ((append-fields (post-file props)
+             (let* ((file-fields (list :music :mood :location :tags))
+                    (lj-fields (list :current_music :current_mood :current_location :taglist))
+                    (fields (mapcar #'(lambda (field lj-field)
+                                        (if (b64getf props lj-field)
+                                            (list field (b64getf props lj-field)) ()))
+                                    file-fields lj-fields))
+                    (fields-list (apply #'concatenate 'list fields)))
+
+               (if (not (null fields-list))
+                   (concatenate 'list
+                                post-file
+                                (list :fields fields-list))
+                   post-file)))
+
+           (add-privacy-field (post-file lj-security)
+               (if (null lj-security) post-file
+                   (cond
+                     ((string= lj-security "private")
+                      (concatenate 'list
+                                   post-file
+                                   (list :privacy "private")))
+                     ;; note, that we do not import specific groups
+                     ;; just say friends there. Why? Because I'm too
+                     ;; lazy to implement it
+                     ((string= lj-security "usemask")
+                      (concatenate 'list
+                                   post-file
+                                   (list :privacy "friends")))
+                     (t post-file))))
+           )
+    (list :post (list
                  :itemid (getf xml :itemid)
                  :anum (getf xml :anum)
                  :ditemid (getf xml :ditemid)
                  :url (getf xml :url)
-                               )
-                 :post-file (list
-                             :title (getf xml :subject)
-                             :body (getf xml :event)
-                             :body-raw (markdownify (getf xml :event))
-                             )))
+                 )
+          :post-file (add-privacy-field
+                      (append-fields (list
+                                      :title (b64getf xml :subject)
+                                      :body (b64getf xml :event)
+                                      :body-raw (markdownify (b64getf xml :event))
+                                      )
+                                     (getf xml :props))
+                      (getf xml :security)))))
 
 ;;;; Merge fuctionality
 

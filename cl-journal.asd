@@ -23,6 +23,7 @@ This file is a part of cl-journal project.
                #:cl-markdown
                #:split-sequence
                #:cl-base64
+               #:flexi-streams
                #:cl-strings
                #:cl-slug
                #:plump
