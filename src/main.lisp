@@ -39,10 +39,12 @@ Commands:
         Pretend that all local posts are uptodate comparing to the
         remote and save remote timestamps as a proof
 
-    merge
+    merge [id]
         Check all fetched remote posts and in case they do not
         exist locally or were changed after creation create
-        local files representing them
+        local files representing them.
+
+        If id is supplied only this post is going to be merged.
 
     status
         Display the list with filenames of all drafts or files that
@@ -88,7 +90,7 @@ Commands:
                                    ))
         ((equal command "merge") (progn
                                    (restore-posts)
-                                   (merge-fetched-posts)
+                                   (merge-fetched-posts arg)
                                    ))
         ((equal command "url") (if arg
                                    (progn

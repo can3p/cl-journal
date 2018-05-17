@@ -236,7 +236,37 @@
             (setf (server-changed-at post) ts))))
     (save-posts)))
 
-#+()(defun merge-fetched-posts ()
-  (let ((store (restore-source-posts (fetch-store *posts*))))
-    (declare (ignore store))
-    (error "Merge functionality is not there yet")))
+(defun merge-fetched-posts (&optional arg)
+  (let ((store (restore-source-posts (fetch-store *posts*)))
+        (ht (to-hash-table *posts*))
+        (target-itemid (when arg (parse-integer arg))))
+    (loop for event in (events store)
+          for itemid = (getf (getf event :event) :itemid)
+          for post = (gethash itemid ht)
+          when (and (or (not target-itemid)
+                        (equal itemid target-itemid))
+                    (or (not post)
+                        (older-than-p post (getf event :sync-ts))))
+            do
+               (let* ((parsed (parse-xml-response (getf event :event)))
+                      (text (post-file-list-to-string
+                                        (getf parsed :post-file))))
+
+                 (if (null post)
+                     (progn
+                       ;; no post
+                       (save-text-file (generate-unique-filename
+                                        *posts*
+                                        (getf (getf parsed :post) :log-ts)
+                                        (or (getf (getf parsed :post-file) :title)
+                                            "No title"))
+                                       text)
+                       )
+                     (progn
+                       ;; existing post
+                       (save-text-file (filename post)
+                                       text)
+                       (setf (server-changed-at post) (getf event :sync-ts))
+                       )
+                     )))
+    (save-posts)))
