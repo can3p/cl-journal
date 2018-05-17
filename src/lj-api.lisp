@@ -37,6 +37,7 @@
    :journal
    :updated-at
    :server-changed-at
+   :log-ts
    :posts)
   (:export :publish-post
            :update-post
@@ -149,7 +150,7 @@
   (set-credentials db)
   (let ((*raw-text* (raw-text db)))
     (let ((post (create-new-post post-file))
-          (server-ts (lj-get-server-ts))
+          (server-ts (lj-get-server-ts)))
 
       ;; technically this is not true, but this
       ;; timestamp can only be later then a honest
