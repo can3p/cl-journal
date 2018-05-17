@@ -126,7 +126,7 @@
    (created-at :initarg :created-at :initform (get-universal-time) :reader created-at)
    (ignored-at :initarg :ignored-at :initform nil :accessor ignored-at)
    (server-changed-at :initarg :server-changed-at :initform nil :accessor server-changed-at)
-   (log-ts :initarg :server-changed-at :initform nil :accessor log-ts)
+   (log-ts :initarg :log-ts :initform nil :accessor log-ts)
    (filename :initarg :filename :reader filename)
    (journal :initarg :journal :initform nil :reader journal)
    (itemid :initarg :itemid :reader itemid)
@@ -197,6 +197,8 @@
                  :ignored-at (getf plist :ignored-at)
                  :filename (getf plist :filename)
                  :journal (getf plist :journal)
+                 :server-changed-at (getf plist :server-changed-at)
+                 :log-ts (getf plist :log-ts)
                  ))
 
 (defgeneric to-list (post))
