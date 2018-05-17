@@ -21,6 +21,7 @@
    :to-xmplrpc-struct
    :read-from-file
    :create-post-from-xmlrpc-struct
+   :create-post-from-list
    :create-empty-db
    :create-db-from-list
    :login

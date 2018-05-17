@@ -255,12 +255,23 @@
                  (if (null post)
                      (progn
                        ;; no post
-                       (save-text-file (generate-unique-filename
+                       (let* ((fname (generate-unique-filename
                                         *posts*
                                         (getf (getf parsed :post) :log-ts)
                                         (or (getf (getf parsed :post-file) :title)
-                                            "No title"))
-                                       text)
+                                            "No title")))
+                              (new-post (create-post-from-list
+                                         (concatenate 'list
+                                                      (getf parsed :post)
+                                                      (list
+                                                       :server-changed-at (getf event :sync-ts)
+                                                       :created-at (get-universal-time)
+                                                       :updated-at (get-universal-time)
+                                                       :ignored-at (get-universal-time)
+                                                       :filename fname
+                                                       )))))
+                         (save-text-file fname text)
+                         (push new-post (posts *posts*)))
                        )
                      (progn
                        ;; existing post
