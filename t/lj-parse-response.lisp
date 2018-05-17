@@ -43,6 +43,7 @@
                    :anum 0
                    :ditemid 14336
                    :url "https://can3p-test.livejournal.com/14336.html"
+                   :log-ts "2018-04-30 21:42:21"
                    )
             :post-file (
                         :title "test title"
@@ -85,6 +86,7 @@
                    :anum 147
                    :ditemid 14739
                    :url "https://can3p-test.livejournal.com/14739.html"
+                   :log-ts "2018-05-06 12:13:55"
                    )
             :post-file (
                         :title ,russian-text-decoded
@@ -118,6 +120,7 @@
                    :anum 0
                    :ditemid 14336
                    :url "https://can3p-test.livejournal.com/14336.html"
+                   :log-ts "2018-04-30 21:42:21"
                    )
             :post-file (
                         :title "test title"
@@ -145,6 +148,7 @@
                    :anum 0
                    :ditemid 14336
                    :url "https://can3p-test.livejournal.com/14336.html"
+                   :log-ts "2018-04-30 21:42:21"
                    )
             :post-file (
                         :title "test title"

@@ -108,6 +108,7 @@
                  :anum (getf xml :anum)
                  :ditemid (getf xml :ditemid)
                  :url (getf xml :url)
+                 :log-ts (getf xml :logtime)
                  )
           :post-file (add-privacy-field
                       (append-fields (list

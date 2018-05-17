@@ -16,6 +16,7 @@
    :<post>
    :*raw-text*
    :raw-text
+   :generate-unique-filename
    :<db>
    :to-xmplrpc-struct
    :read-from-file
@@ -45,6 +46,7 @@
    :fetch-store
    :to-hash-table
    :server-changed-at
+   :log-ts
    :itemid
    :draft)
   )
@@ -124,6 +126,7 @@
    (created-at :initarg :created-at :initform (get-universal-time) :reader created-at)
    (ignored-at :initarg :ignored-at :initform nil :accessor ignored-at)
    (server-changed-at :initarg :server-changed-at :initform nil :accessor server-changed-at)
+   (log-ts :initarg :server-changed-at :initform nil :accessor log-ts)
    (filename :initarg :filename :reader filename)
    (journal :initarg :journal :initform nil :reader journal)
    (itemid :initarg :itemid :reader itemid)
@@ -208,6 +211,7 @@
    :updated-at (updated-at post)
    :ignored-at (ignored-at post)
    :server-changed-at (server-changed-at post)
+   :log-ts (log-ts post)
    :filename (filename post)
    :journal (journal post)
    ))

@@ -148,12 +148,14 @@
 (defmethod publish-post ((db <db>) (post-file <post-file>))
   (set-credentials db)
   (let ((*raw-text* (raw-text db)))
-    (let ((post (create-new-post post-file)))
+    (let ((post (create-new-post post-file))
+          (server-ts (lj-get-server-ts))
 
       ;; technically this is not true, but this
       ;; timestamp can only be later then a honest
       ;; one which is enough for the usecase
-      (setf (server-changed-at post) (lj-get-server-ts))
+      (setf (server-changed-at post) server-ts)
+      (setf (log-ts post) server-ts)
       (push post (posts db)))))
 
 (defgeneric delete-post (db post))
