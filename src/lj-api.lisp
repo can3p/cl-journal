@@ -68,10 +68,10 @@
    (getf :challenge)))
 
 ;; source of wisdom - https://github.com/apparentlymart/livejournal/blob/master/cgi-bin/ljprotocol.pl
-(defun lj-getevents (itemids)
+(defun lj-getevents (itemids &key (encoding :unicode))
   (let* ((c (-<> (list
                   ;; ver 1 is required for api to work
-                  :ver 1
+                  :ver (if (equal encoding :unicode) 1 0)
                   ;; this gives us lj-embeds with video id, that we can later
                   ;; convert to something meaningful
                   :get_video_ids 1
@@ -81,6 +81,58 @@
                  (add-challenge))))
     (rpc-call "LJ.XMLRPC.getevents" c)))
 
+(defun lj-getevents-multimode (itemids &key (speed 100000)
+                                         (encoding :unicode)
+                                         (final nil)
+                                         (num-calls 1))
+  "Livejournal encoding conversion is broken and we
+   don't want to use it. What we want is to get posts
+   in nonunicode post if necessary because they seem
+   to be in unicode anyway (WTF?). This sub will try
+   to guess encoding and adjust speed to get events
+   in not so terrible amount of queries"
+  (labels ((toggle-encoding (encoding)
+             (if (equal encoding :unicode) :plain :unicode))
+           (handle-failure ()
+             (cond
+               (final (error "Both modes failed for fetch, cannot proceed with download"))
+               ((equal speed 1)
+                (lj-getevents-multimode itemids
+                                        :encoding (toggle-encoding encoding)
+                                        :speed 1
+                                        :final t
+                                        :num-calls (1+ num-calls)))
+               (t
+                (lj-getevents-multimode itemids
+                                        :encoding encoding
+                                        :speed 1
+                                        :num-calls (1+ num-calls)))
+             ))
+           (merge-results (a b)
+             (let ((lastsync (getf b :lastsync)))
+               (list :skip 0
+                     :lastsync lastsync
+                     :events (concatenate 'list
+                                          (getf a :events)
+                                          (getf b :events)))))
+           )
+    (handler-case
+        (let* ((num-to-fetch (min speed (length itemids)))
+               (results (lj-getevents (subseq itemids 0 num-to-fetch)
+                                      :encoding encoding)))
+          (if (<= (length itemids) num-to-fetch)
+              (progn
+                (format t "~a calls have been made to fetch items~%" num-calls)
+                results)
+              (merge-results results
+                             (lj-getevents-multimode (subseq itemids num-to-fetch)
+                                                     :encoding encoding
+                                                     :speed (* speed 2)
+                                                     :num-calls (1+ num-calls)))))
+      (RPC4CL:XML-RPC-FAULT (f)
+                        (declare (ignore f))
+                        (handle-failure)))))
+
 (defun older-p (ts1 ts2 threshold)
   (labels ((parse (ts)
              (let
@@ -89,6 +141,7 @@
     (timestamp>
          (timestamp- (parse ts2) threshold :sec)
          (parse ts1))))
+
 
 (defun lj-get-server-ts ()
   ;; scary hack to get server ts in a single timezone
@@ -353,7 +406,7 @@
    (cond
      ((null new-itemids) store)
      (t (let ((new-events (-<> new-itemids
-                             (lj-getevents)
+                             (lj-getevents-multimode)
                              (getf <> :events)
                              (mapcar #'(lambda (x) (enrich-with-ts x ht)) <>))))
           (merge-events store new-events last-item-ts)
