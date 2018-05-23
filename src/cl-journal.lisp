@@ -258,7 +258,8 @@
                        (let* ((fname (generate-unique-filename
                                         *posts*
                                         (getf (getf parsed :post) :log-ts)
-                                        (or (getf (getf parsed :post-file) :title)
+                                        (if (getf (getf parsed :post-file) :title)
+                                            (format nil "~a" (getf (getf parsed :post-file) :title))
                                             "No title")))
                               (new-post (create-post-from-list
                                          (concatenate 'list
