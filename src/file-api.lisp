@@ -87,6 +87,13 @@
                                 (list :fields fields-list))
                    post-file)))
 
+           (append-subject (post-file subject)
+             (if subject
+                 (concatenate 'list
+                              (list :title (format nil "~a" subject))
+                              post-file)
+                 post-file))
+
            (add-privacy-field (post-file lj-security)
                (if (null lj-security) post-file
                    (cond
@@ -110,14 +117,13 @@
                  :url (getf xml :url)
                  :log-ts (getf xml :logtime)
                  )
-          :post-file (add-privacy-field
-                      (append-fields (list
-                                      :title (b64getf xml :subject)
-                                      :body (b64getf xml :event)
-                                      :body-raw (markdownify (b64getf xml :event))
-                                      )
-                                     (getf xml :props))
-                      (getf xml :security)))))
+          :post-file (-<> (list
+                           :body (b64getf xml :event)
+                           :body-raw (markdownify (b64getf xml :event))
+                           )
+                      (append-subject <> (b64getf xml :subject))
+                      (append-fields <> (getf xml :props))
+                      (add-privacy-field <> (getf xml :security))))))
 
 (defun post-file-list-to-string (post-file)
   (with-output-to-string (out)
