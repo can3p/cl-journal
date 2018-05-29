@@ -47,6 +47,7 @@
    :fetch-store
    :to-hash-table
    :server-changed-at
+   :synced-from-fetch
    :log-ts
    :itemid
    :draft)
