@@ -58,7 +58,7 @@
 > "))))
 
       ((tag-name-p node "li")
-         (format *stream* "~%* ")
+         (format *stream* "* ")
          (loop for child across (children node)
                do (serialize-object child))
          )
