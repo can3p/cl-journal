@@ -38,6 +38,7 @@
    :journal
    :updated-at
    :server-changed-at
+   :synced-from-fetch
    :log-ts
    :posts)
   (:export :publish-post
