@@ -279,6 +279,9 @@
                        ;; existing post
                        (save-text-file (filename post)
                                        text)
+                       ;; we set this flag to t whenever we replace local file with
+                       ;; remote version
+                       (setf (synced-from-fetch post) t)
                        (setf (server-changed-at post) (getf event :sync-ts))
                        )
                      )))
