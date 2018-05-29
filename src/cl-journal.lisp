@@ -301,12 +301,21 @@
 (defun remerge-fetched-posts (&optional arg)
   (let ((store (restore-source-posts (fetch-store *posts*)))
         (ht (to-hash-table *posts*))
-        (target-itemid (when arg (parse-integer arg))))
-    (loop for event in (events store)
+        (target-itemid (when arg (parse-integer arg)))
+        (visited (make-hash-table)))
+    ;; we use reverse there to start from the freshest versions
+    ;; of the posts ever and skip the rest
+    (loop for event in (reverse (events store))
           for itemid = (getf (getf event :event) :itemid)
           for post = (gethash itemid ht)
-          when (synced-from-fetch post)
+          when (and (not (gethash itemid visited))
+                    ;; remerge should work only on existing posts
+                    post
+                    ;; and only on ones that were not modified locally
+                    ;; after merge
+                    (synced-from-fetch post))
             do
+               (setf (gethash itemid visited) t)
                (let* ((parsed (parse-xml-response (getf event :event)))
                       (text (post-file-list-to-string
                                         (getf parsed :post-file))))
