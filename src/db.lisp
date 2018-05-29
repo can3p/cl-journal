@@ -306,10 +306,11 @@
           (slug (slugify base))
           (ht (to-hash-table db :key-sub #'filename)))
 
-      (loop with cnt = 0
-            for name = (gen-name date slug (incf cnt))
-            while (gethash name ht)
-            finally (return name)))))
+      (with-output-to-string (out)
+        (loop with cnt = 0
+              for name = (gen-name date slug (incf cnt))
+              while (gethash name ht)
+              finally (format out "~a" name))))))
 
 (defun get-last-published-post (db)
   (car (sort (posts db) #'> :key #'created-at)))
