@@ -243,11 +243,15 @@
 (defun merge-fetched-posts (&optional arg)
   (let ((store (restore-source-posts (fetch-store *posts*)))
         (ht (to-hash-table *posts*))
-        (target-itemid (when arg (parse-integer arg))))
-    (loop for event in (events store)
+        (target-itemid (when arg (parse-integer arg)))
+        (visited (make-hash-table)))
+    ;; we use reverse there to start from the freshest versions
+    ;; of the posts ever and skip the rest
+    (loop for event in (reverse (events store))
           for itemid = (getf (getf event :event) :itemid)
           for post = (gethash itemid ht)
-          when (and (or (not target-itemid)
+          when (and (not (gethash itemid visited))
+                    (or (not target-itemid)
                         (equal itemid target-itemid))
                     (or (not post)
                         (older-than-p post (getf event :sync-ts))))
@@ -256,6 +260,7 @@
                       (text (post-file-list-to-string
                                         (getf parsed :post-file))))
 
+                 (setf (gethash itemid visited) t)
                  (if (null post)
                      (progn
                        ;; no post
@@ -275,11 +280,13 @@
                                                        :synced-from-fetch t
                                                        :filename fname
                                                        )))))
+                         (format t "Write new file ~s~%" fname)
                          (save-text-file fname text)
                          (push new-post (posts *posts*)))
                        )
                      (progn
                        ;; existing post
+                       (format t "Overwriting existing file file ~s~%" (filename post))
                        (save-text-file (filename post)
                                        text)
                        ;; we set this flag to t whenever we replace local file with
