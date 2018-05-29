@@ -110,14 +110,17 @@
 
 (defun get-merge-candidates (db)
   (let ((store (restore-source-posts (fetch-store db)))
-        (ht (to-hash-table *posts*)))
+        (ht (to-hash-table *posts*))
+        (visited (make-hash-table)))
     (loop for event in (events store)
           for itemid = (getf (getf event :event) :itemid)
           for post = (gethash itemid ht)
-          when (or (not post)
-                   (older-than-p post (getf event :sync-ts)))
+          when (and (not (gethash itemid visited))
+                    (or (not post)
+                        (older-than-p post (getf event :sync-ts))))
             collect
             (progn
+              (setf (gethash itemid visited) t)
               (if (null post)
                   (format nil "~a - ~a"
                           itemid
