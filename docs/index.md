@@ -27,7 +27,8 @@ find.
 ## Features
 
 * Create posts as simple markdown files
-* Fetch posts from the server and store it in a row format (no merge functionality)
+* Fetch posts from the server and store it in a row format and merge them into markdown
+  including all supported fields!
 * Privacy, Tags, Music, Location and Mood fields are supported
 * Links to files in the repo resolve to links to relevant posts in the blog
 * Update/removal of posts is supported when relevant file is modified/removed
@@ -100,7 +101,6 @@ This list is not structured in a particular order
 
 * reposts
 * preview
-* backwards sync to get updates from the service
 * photo upload functionality
 
 ## Frequently asked questions:
@@ -139,7 +139,7 @@ This list is not structured in a particular order
   If you don't know what that means and want to have your service supported
   consider opening a [github issue](https://github.com/can3p/cl-journal/issues).
 
-- *My old posts are unreadable, encoding is broken. WTF?
+- *My old posts are unreadable, encoding is broken. WTF?*
 
   You probably did an effort to fix your encoding and went to
   [encoding](https://www.livejournal.com/settings/?c=OldEncoding)
@@ -148,6 +148,13 @@ This list is not structured in a particular order
   no encoding on this page and fetch again to see if it helps. In
   this setting we try to download posts in different ways to
   get the content right.
+
+- *I fetched and merged old posts, but in new release merge got improved. How
+  can I generate post files again?*
+
+  In case you didn't touch them afterwards you can always run `cl-journal remerge`
+  and cl-journal will regenerate markdown files for all the posts. If merged
+  post was updated and pushed later it will be left untouched.
 
 - *How can I help?*
 
