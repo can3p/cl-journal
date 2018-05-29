@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+## 0.7.0
+
 * 2018-05-29 Remerge command to support free remerges for already merged posts
 * 2018-05-24 Fetch functionality correctly handles 8bit encodings
 * 2018-05-17 Merge functionality
