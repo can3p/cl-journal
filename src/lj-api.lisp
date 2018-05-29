@@ -14,6 +14,7 @@
                 :get-password)
   (:import-from :local-time
    :timestamp>
+   :timestamp-
    :parse-timestring)
   (:import-from
    :cl-journal.db
@@ -36,6 +37,9 @@
    :filename
    :journal
    :updated-at
+   :server-changed-at
+   :synced-from-fetch
+   :log-ts
    :posts)
   (:export :publish-post
            :update-post
@@ -65,10 +69,10 @@
    (getf :challenge)))
 
 ;; source of wisdom - https://github.com/apparentlymart/livejournal/blob/master/cgi-bin/ljprotocol.pl
-(defun lj-getevents (itemids)
+(defun lj-getevents (itemids &key (encoding :unicode))
   (let* ((c (-<> (list
                   ;; ver 1 is required for api to work
-                  :ver 1
+                  :ver (if (equal encoding :unicode) 1 0)
                   ;; this gives us lj-embeds with video id, that we can later
                   ;; convert to something meaningful
                   :get_video_ids 1
@@ -77,6 +81,78 @@
                   :selecttype "multiple")
                  (add-challenge))))
     (rpc-call "LJ.XMLRPC.getevents" c)))
+
+(defun lj-getevents-multimode (itemids &key (speed 100000)
+                                         (encoding :unicode)
+                                         (final nil)
+                                         (num-calls 1))
+  "Livejournal encoding conversion is broken and we
+   don't want to use it. What we want is to get posts
+   in nonunicode post if necessary because they seem
+   to be in unicode anyway (WTF?). This sub will try
+   to guess encoding and adjust speed to get events
+   in not so terrible amount of queries"
+  (labels ((toggle-encoding (encoding)
+             (if (equal encoding :unicode) :plain :unicode))
+           (handle-failure ()
+             (cond
+               (final (error "Both modes failed for fetch, cannot proceed with download"))
+               ((equal speed 1)
+                (lj-getevents-multimode itemids
+                                        :encoding (toggle-encoding encoding)
+                                        :speed 1
+                                        :final t
+                                        :num-calls (1+ num-calls)))
+               (t
+                (lj-getevents-multimode itemids
+                                        :encoding encoding
+                                        :speed 1
+                                        :num-calls (1+ num-calls)))
+             ))
+           (merge-results (a b)
+             (let ((lastsync (getf b :lastsync)))
+               (list :skip 0
+                     :lastsync lastsync
+                     :events (concatenate 'list
+                                          (getf a :events)
+                                          (getf b :events)))))
+           )
+    (handler-case
+        (let* ((num-to-fetch (min speed (length itemids)))
+               (results (lj-getevents (subseq itemids 0 num-to-fetch)
+                                      :encoding encoding)))
+          (if (<= (length itemids) num-to-fetch)
+              (progn
+                (format t "~a calls have been made to fetch items~%" num-calls)
+                results)
+              (merge-results results
+                             (lj-getevents-multimode (subseq itemids num-to-fetch)
+                                                     :encoding encoding
+                                                     :speed (* speed 2)
+                                                     :num-calls (1+ num-calls)))))
+      (RPC4CL:XML-RPC-FAULT (f)
+                        (declare (ignore f))
+                        (handle-failure)))))
+
+(defun older-p (ts1 ts2 threshold)
+  (labels ((parse (ts)
+             (let
+                 ((local-time::*default-timezone* local-time::+utc-zone+))
+               (parse-timestring ts :date-time-separator #\Space))))
+    (timestamp>
+         (timestamp- (parse ts2) threshold :sec)
+         (parse ts1))))
+
+
+(defun lj-get-server-ts ()
+  ;; scary hack to get server ts in a single timezone
+  (labels ((r () (getf (lj-getevents '(1000000)) :lastsync))) ;; something big enough to have empty lookup
+    (loop with a = (r)
+          do
+             (let ((b (r)))
+               (format t "~a~%" b)
+               (when (older-p a b 10) (return a))
+               (when (older-p b a 10) (return b))))))
 
 (defun lj-syncitems (&optional (lastsync nil))
   (let* ((c (-<> (list :ver 1)
@@ -144,7 +220,14 @@
 (defmethod publish-post ((db <db>) (post-file <post-file>))
   (set-credentials db)
   (let ((*raw-text* (raw-text db)))
-    (let ((post (create-new-post post-file)))
+    (let ((post (create-new-post post-file))
+          (server-ts (lj-get-server-ts)))
+
+      ;; technically this is not true, but this
+      ;; timestamp can only be later then a honest
+      ;; one which is enough for the usecase
+      (setf (server-changed-at post) server-ts)
+      (setf (log-ts post) server-ts)
       (push post (posts db)))))
 
 (defgeneric delete-post (db post))
@@ -162,7 +245,17 @@
   (set-credentials db)
   (let ((*raw-text* (raw-text db)))
     (update-old-post post))
-  (setf (updated-at post) (get-universal-time)))
+  (setf (updated-at post) (get-universal-time))
+  ;; we reset synced flag because once we updated
+  ;; post from current version of markdown we want
+  ;; to keep it untouched
+  (setf (synced-from-fetch post) nil)
+
+  ;; technically this is not true, but this
+  ;; timestamp can only be later then a honest
+  ;; one which is enough for the usecase
+  (setf (server-changed-at post) (lj-get-server-ts))
+  )
 
 (defgeneric fetch-posts (db))
 
@@ -254,12 +347,18 @@
              (syncitems-item-data item)
            (list itemid time)))
 
+       (to-hash-table (l)
+         (let ((ht (make-hash-table :test 'equal)))
+           (dolist (item l ht)
+             (setf (gethash (car item) ht) (cadr item)))))
+
        (get-return-values (l)
          (let* ((parsed-list (mapcar #'to-values l))
                 (last-item (car (reverse parsed-list))))
            (values
             (mapcar #'car parsed-list)
-            (cadr last-item))))
+            (cadr last-item)
+            (to-hash-table parsed-list))))
 
        (sync-more (l ts)
          (cond
@@ -293,6 +392,9 @@
                        (sync-more <> new-ts))))))))
     (sync-more nil (last-post-ts store))))
 
+(defun enrich-with-ts (event ht)
+  (list :event event
+        :sync-ts (gethash (getf event :itemid) ht)))
 
 ;; take last-post-ts from the store
 ;; call sync posts
@@ -305,11 +407,12 @@
   "Fetch all new items from remote service since last-fetched-ts
    of the store"
   (multiple-value-bind
-   (new-itemids last-item-ts) (get-unfetched-item-ids store)
+   (new-itemids last-item-ts ht) (get-unfetched-item-ids store)
    (cond
      ((null new-itemids) store)
      (t (let ((new-events (-<> new-itemids
-                             (lj-getevents)
-                             (getf <> :events))))
+                             (lj-getevents-multimode)
+                             (getf <> :events)
+                             (mapcar #'(lambda (x) (enrich-with-ts x ht)) <>))))
           (merge-events store new-events last-item-ts)
           (fetch-posts store))))))

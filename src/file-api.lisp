@@ -1,12 +1,18 @@
 (in-package :cl-user)
 (defpackage cl-journal.file-api
-  (:use :cl)
+  (:use :cl :cl-arrows)
   (:import-from :uiop/os :getcwd)
   (:import-from :cl-markdown :markdown)
+  (:import-from :cl-journal.markdownify :markdownify)
+  (:import-from :flexi-streams :octets-to-string)
+  (:import-from :cl-base64 :base64-string-to-usb8-array)
   (:export
    :parse-post-file
    :read-file
    :read-parse-file
+   :parse-xml-response
+   :post-file-list-to-string
+   :save-text-file
    :get-markdown-files))
 
 (in-package :cl-journal.file-api)
@@ -52,3 +58,146 @@
 (defun get-markdown-files ()
   (mapcar #'(lambda (x) (enough-namestring x (getcwd)))
           (directory "./**/*.md")))
+
+
+(defun b64getf (obj field)
+  (let ((val (getf obj field)))
+    (if (and (consp val) (equal (car val) :base64))
+        (octets-to-string (base64-string-to-usb8-array
+                           (cadr val))
+                           :external-format :utf8)
+        val)))
+
+(defun parse-xml-response (xml)
+  "Function takes output of the xml-rpc endpoint and turns it
+   in a list that can become <post-file> and <post> objects.
+   See test cases to get an understanding of cases covered"
+  (labels ((append-fields (post-file props)
+             (let* ((file-fields (list :music :mood :location :tags))
+                    (lj-fields (list :current_music :current_mood :current_location :taglist))
+                    (fields (mapcar #'(lambda (field lj-field)
+                                        (if (b64getf props lj-field)
+                                            (list field (b64getf props lj-field)) ()))
+                                    file-fields lj-fields))
+                    (fields-list (apply #'concatenate 'list fields)))
+
+               (if (not (null fields-list))
+                   (concatenate 'list
+                                post-file
+                                (list :fields fields-list))
+                   post-file)))
+
+           (append-subject (post-file subject)
+             (if subject
+                 (concatenate 'list
+                              (list :title (format nil "~a" subject))
+                              post-file)
+                 post-file))
+
+           (add-privacy-field (post-file lj-security)
+               (if (null lj-security) post-file
+                   (cond
+                     ((string= lj-security "private")
+                      (concatenate 'list
+                                   post-file
+                                   (list :privacy "private")))
+                     ;; note, that we do not import specific groups
+                     ;; just say friends there. Why? Because I'm too
+                     ;; lazy to implement it
+                     ((string= lj-security "usemask")
+                      (concatenate 'list
+                                   post-file
+                                   (list :privacy "friends")))
+                     (t post-file))))
+           )
+    (list :post (list
+                 :itemid (getf xml :itemid)
+                 :anum (getf xml :anum)
+                 :ditemid (getf xml :ditemid)
+                 :url (getf xml :url)
+                 :log-ts (getf xml :logtime)
+                 )
+          :post-file (-<> (list
+                           :body (b64getf xml :event)
+                           :body-raw (markdownify (b64getf xml :event))
+                           )
+                      (append-subject <> (b64getf xml :subject))
+                      (append-fields <> (getf xml :props))
+                      (add-privacy-field <> (getf xml :security))))))
+
+(defun post-file-list-to-string (post-file)
+  (with-output-to-string (out)
+    (when (getf post-file :title)
+      (format out "title: ~a~%" (getf post-file :title)))
+    (when (getf post-file :privacy)
+      (format out "privacy: ~a~%" (getf post-file :privacy)))
+    (when (getf post-file :fields)
+      (loop for (key value . rest)
+              on (getf post-file :fields)
+            by #'cddr
+            do
+               (format out "~a: ~a~%"
+                       (string-downcase (symbol-name key))
+                       value)))
+    (format out "~%~a" (getf post-file :body-raw))))
+
+(defun save-text-file (filename text)
+  (with-open-file (out filename
+                       :direction :output
+                       :if-exists :supersede)
+    (with-standard-io-syntax
+      (format out "~a" text))))
+
+;;;; Merge fuctionality
+
+;; What fact do we have available to make sync work?
+
+;; 1) We can get update since some ts. Ts should be server time.
+;;    We get notifications about new and updated posts.
+
+;; 2) There is no nonhacky way of getting update ts from the
+;;    post response by itself, however lj-getevents returns sync timestamp
+;;    to us
+
+;; Sounds like we have enough information to do a sync! We can split task
+;; in three:
+
+;; 1) Whenever we create/update post, we poke livejournal server to get
+;;    a timestamp and store it along the post. [DONE]
+
+;; 2) Whenever we fetch updated items, we store update timestamp of every
+;;    one of them along with post response. [DONE]
+
+;; Given these two last step is easy!
+
+;; 3) Whenever we merge we take all raw posts that either do not exist as
+;;    markdown or markdown has update ts ealier then raw server response
+;;    and convert raw response to the markdown which is then save two the disk
+;;    potentially replacing old file.
+
+;; Sounds like a plan! The only two words that need clarification are `convert`
+;; and `save` on a disk. Let's start with `save`.
+
+;; How can we get the name? [DONE]
+
+;; 1) If particular itemid is already in db use the name from there.
+
+;; 2) If not, take date from event time as a base. If title exists,
+;;    slagify it the best effort.
+
+;; 3) Filename exists? Add -N to the end starting from 1 onwards till we
+;; find an empty spot.
+
+;; How do we convert? [DONE]
+
+;; 1) We walk over the structure. Atom is either a number or a string
+;;    or a list with car :base64 and cdr containing some base64 encoded
+;;    utf8 text.
+
+;; 2) We save title as is, map fields to the supported flag.
+
+;; 3) Flags can be marked as ignored, otherwise they cause a restart.
+
+;; 4) Body text is markdownified, lj embeds are unwrapped.
+
+;; That's it

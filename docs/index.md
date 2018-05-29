@@ -139,14 +139,15 @@ This list is not structured in a particular order
   If you don't know what that means and want to have your service supported
   consider opening a [github issue](https://github.com/can3p/cl-journal/issues).
 
-- *I cannot fetch posts, client throws stacktrace in my face and complains about encodings. WTF?*
+- *My old posts are unreadable, encoding is broken. WTF?
 
-  Your blog is old enough to have posts written in non unicode encoding.
-  You can go to [encoding](https://www.livejournal.com/settings/?c=OldEncoding)
-  page a try your luck by choosing one of the encodings there. If you were
-  particularly lucky to write posts in several non unicode encodings
-  you might be out of luck for now. Feel free to make a pull request and
-  add support for your case.
+  You probably did an effort to fix your encoding and went to
+  [encoding](https://www.livejournal.com/settings/?c=OldEncoding)
+  page and chose a correct one. Unfortunately livejournal messes
+  this setting up and gives posts double encoded. Try to select
+  no encoding on this page and fetch again to see if it helps. In
+  this setting we try to download posts in different ways to
+  get the content right.
 
 - *How can I help?*
 

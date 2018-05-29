@@ -14,6 +14,9 @@
            :unpublish-deleted-files
            :restore-posts
            :fetch-updated-posts
+           :mark-as-pulled
+           :merge-fetched-posts
+           :remerge-fetched-posts
            :lookup-file-url
            :edit-new-post
            :print-status
@@ -105,6 +108,29 @@
        (mapcar #'filename)
        ))
 
+(defun get-merge-candidates (db)
+  (let ((store (restore-source-posts (fetch-store db)))
+        (ht (to-hash-table *posts*))
+        (visited (make-hash-table)))
+    (loop for event in (events store)
+          for itemid = (getf (getf event :event) :itemid)
+          for post = (gethash itemid ht)
+          when (and (not (gethash itemid visited))
+                    (or (not post)
+                        (older-than-p post (getf event :sync-ts))))
+            collect
+            (progn
+              (setf (gethash itemid visited) t)
+              (if (null post)
+                  (format nil "~a - ~a"
+                          itemid
+                          (getf (getf event :event) :url))
+                  (format nil "~a - ~a (~a)"
+                          itemid
+                          (getf (getf event :event) :url)
+                          (filename post))
+                  )))))
+
 (defun lookup-file-url (fname)
   (let ((obj (get-by-fname *posts* fname)))
     (when obj (url obj))))
@@ -145,6 +171,11 @@
   "There a drafts file~%"
   "No drafts found~%")
 
+(with-files fetched (get-merge-candidates *posts*)
+  "There are ~a fetched posts to merge~%"
+  "There a fetched post to merge~%"
+  "No fetched posts need to be merged~%")
+
 ;; some duplication is still there, right?
 (defun print-status ()
   (flet ((print-names (items)
@@ -155,7 +186,8 @@
     (with-draft-files #'print-string-names)
     (with-new-files #'print-names)
     (with-modified-files #'print-names)
-    (with-deleted-files #'print-names)))
+    (with-deleted-files #'print-names)
+    (with-fetched-files #'print-string-names)))
 
 (defun ignore-all ()
   (let ((ts (get-universal-time)))
@@ -195,3 +227,99 @@
   (let ((store (restore-source-posts (fetch-store *posts*))))
     (fetch-posts *posts*)
     (save-source-posts store)))
+
+(defun mark-as-pulled ()
+  (let ((ht (-<> *posts*
+                 (fetch-posts)
+                 (restore-source-posts)
+                 (to-hash-table))))
+    (loop for post in (posts *posts*) do
+      (let ((ts (gethash (itemid post) ht)))
+        (if (null ts)
+            (format t "Item ~a was not fetched yet, run cl-journal fetch first~%" (itemid post))
+            (setf (server-changed-at post) ts))))
+    (save-posts)))
+
+(defun merge-fetched-posts (&optional arg)
+  (let ((store (restore-source-posts (fetch-store *posts*)))
+        (ht (to-hash-table *posts*))
+        (target-itemid (when arg (parse-integer arg)))
+        (visited (make-hash-table)))
+    ;; we use reverse there to start from the freshest versions
+    ;; of the posts ever and skip the rest
+    (loop for event in (reverse (events store))
+          for itemid = (getf (getf event :event) :itemid)
+          for post = (gethash itemid ht)
+          when (and (not (gethash itemid visited))
+                    (or (not target-itemid)
+                        (equal itemid target-itemid))
+                    (or (not post)
+                        (older-than-p post (getf event :sync-ts))))
+            do
+               (let* ((parsed (parse-xml-response (getf event :event)))
+                      (text (post-file-list-to-string
+                                        (getf parsed :post-file))))
+
+                 (setf (gethash itemid visited) t)
+                 (if (null post)
+                     (progn
+                       ;; no post
+                       (let* ((fname (generate-unique-filename
+                                        *posts*
+                                        (getf (getf parsed :post) :log-ts)
+                                        (or (getf (getf parsed :post-file) :title)
+                                            "No title")))
+                              (new-post (create-post-from-list
+                                         (concatenate 'list
+                                                      (getf parsed :post)
+                                                      (list
+                                                       :server-changed-at (getf event :sync-ts)
+                                                       :created-at (get-universal-time)
+                                                       :updated-at (get-universal-time)
+                                                       :ignored-at (get-universal-time)
+                                                       :synced-from-fetch t
+                                                       :filename fname
+                                                       )))))
+                         (format t "Writing new file ~s~%" fname)
+                         (save-text-file fname text)
+                         (push new-post (posts *posts*)))
+                       )
+                     (progn
+                       ;; existing post
+                       (format t "Overwriting existing file file ~s~%" (filename post))
+                       (save-text-file (filename post)
+                                       text)
+                       ;; we set this flag to t whenever we replace local file with
+                       ;; remote version
+                       (setf (synced-from-fetch post) t)
+                       (setf (server-changed-at post) (getf event :sync-ts))
+                       )
+                     )))
+    (save-posts)))
+
+
+(defun remerge-fetched-posts (&optional arg)
+  (let ((store (restore-source-posts (fetch-store *posts*)))
+        (ht (to-hash-table *posts*))
+        (target-itemid (when arg (parse-integer arg)))
+        (visited (make-hash-table)))
+    ;; we use reverse there to start from the freshest versions
+    ;; of the posts ever and skip the rest
+    (loop for event in (reverse (events store))
+          for itemid = (getf (getf event :event) :itemid)
+          for post = (gethash itemid ht)
+          when (and (not (gethash itemid visited))
+                    ;; remerge should work only on existing posts
+                    post
+                    ;; and only on ones that were not modified locally
+                    ;; after merge
+                    (synced-from-fetch post))
+            do
+               (setf (gethash itemid visited) t)
+               (let* ((parsed (parse-xml-response (getf event :event)))
+                      (text (post-file-list-to-string
+                                        (getf parsed :post-file))))
+
+                       ;; existing post
+                       (save-text-file (filename post)
+                                       text)))))

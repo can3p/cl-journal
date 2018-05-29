@@ -35,6 +35,24 @@ Commands:
         Fetch all the posts from the server from the moment of last
         update. This action will not merge posts.
 
+    mark-as-pulled
+        Pretend that all local posts are uptodate comparing to the
+        remote and save remote timestamps as a proof
+
+    merge [id]
+        Check all fetched remote posts and in case they do not
+        exist locally or were changed after creation create
+        local files representing them.
+
+        If id is supplied only this post is going to be merged.
+
+    remerge
+        Find posts that were already merged but not updated locally
+        afterwards and run merge again on them.
+
+        This functionality may be useful in case merge logic improves
+        and you want to get a better version of local posts.
+
     status
         Display the list with filenames of all drafts or files that
         are out of sync with blog service.
@@ -72,6 +90,18 @@ Commands:
         ((equal command "fetch") (progn
                                    (restore-posts)
                                    (fetch-updated-posts)
+                                   ))
+        ((equal command "mark-as-pulled") (progn
+                                   (restore-posts)
+                                   (mark-as-pulled)
+                                   ))
+        ((equal command "merge") (progn
+                                   (restore-posts)
+                                   (merge-fetched-posts arg)
+                                   ))
+        ((equal command "remerge") (progn
+                                   (restore-posts)
+                                   (remerge-fetched-posts)
                                    ))
         ((equal command "url") (if arg
                                    (progn

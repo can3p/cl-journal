@@ -7,20 +7,28 @@
                 :get-date-struct)
   (:import-from :cl-journal.file-api :parse-post-file)
   (:import-from :alexandria :curry :compose)
+  (:import-from :cl-strings :join :split)
+  (:import-from :cl-slug :slugify)
+  (:import-from :local-time
+   :timestamp>
+   :parse-timestring)
   (:export :<post-file>
    :<post>
    :*raw-text*
    :raw-text
+   :generate-unique-filename
    :<db>
    :to-xmplrpc-struct
    :read-from-file
    :create-post-from-xmlrpc-struct
+   :create-post-from-list
    :create-empty-db
    :create-db-from-list
    :login
    :events
    :service-endpoint
    :service-url
+   :older-than-p
    :to-list
    :get-by-fname
    :last-post-ts
@@ -37,6 +45,11 @@
    :refill-store
    :merge-events
    :fetch-store
+   :to-hash-table
+   :server-changed-at
+   :synced-from-fetch
+   :log-ts
+   :itemid
    :draft)
   )
 
@@ -114,6 +127,9 @@
    (updated-at :initarg :updated-at :initform (get-universal-time) :accessor updated-at)
    (created-at :initarg :created-at :initform (get-universal-time) :reader created-at)
    (ignored-at :initarg :ignored-at :initform nil :accessor ignored-at)
+   (server-changed-at :initarg :server-changed-at :initform nil :accessor server-changed-at)
+   (synced-from-fetch :initarg :synced-from-fetch :initform nil :accessor synced-from-fetch)
+   (log-ts :initarg :log-ts :initform nil :accessor log-ts)
    (filename :initarg :filename :reader filename)
    (journal :initarg :journal :initform nil :reader journal)
    (itemid :initarg :itemid :reader itemid)
@@ -124,6 +140,7 @@
 
 (defgeneric to-event-list (post &optional transform))
 (defgeneric to-xmlrpc-struct (post &optional transform is-deleted))
+(defgeneric to-hash-table (source &key))
 
 (defmethod print-object ((post <post>) stream)
   (format stream "<post filename:~a url:~a>~%" (filename post) (url post)))
@@ -150,6 +167,18 @@
 (defmethod deleted-p ((post <post>))
   (not (probe-file (filename post))))
 
+(defgeneric older-than-p (post ts))
+
+(defmethod older-than-p ((post <post>) ts)
+  (labels ((parse (ts)
+             (let
+                 ((local-time::*default-timezone* local-time::+utc-zone+))
+               (parse-timestring ts :date-time-separator #\Space))))
+    (or (not (server-changed-at post))
+        (timestamp>
+         (parse ts)
+         (parse (server-changed-at post))))))
+
 (defun create-post-from-xmlrpc-struct (struct fname journal)
   (make-instance '<post>
                  :itemid (getf struct :itemid)
@@ -171,6 +200,9 @@
                  :ignored-at (getf plist :ignored-at)
                  :filename (getf plist :filename)
                  :journal (getf plist :journal)
+                 :synced-from-fetch (getf plist :synced-from-fetch)
+                 :server-changed-at (getf plist :server-changed-at)
+                 :log-ts (getf plist :log-ts)
                  ))
 
 (defgeneric to-list (post))
@@ -184,6 +216,9 @@
    :created-at (created-at post)
    :updated-at (updated-at post)
    :ignored-at (ignored-at post)
+   :server-changed-at (server-changed-at post)
+   :synced-from-fetch (synced-from-fetch post)
+   :log-ts (log-ts post)
    :filename (filename post)
    :journal (journal post)
    ))
@@ -246,9 +281,36 @@
     :service-endpoint ,(service-endpoint db)
     :posts ,(mapcar #'to-list (posts db))))
 
+(defmethod to-hash-table ((db <db>) &key (key-sub #'itemid))
+  (let ((ht (make-hash-table :test 'equal)))
+    (dolist (post (posts db) ht)
+        (setf (gethash (funcall key-sub post) ht) post))))
+
 (defmethod get-by-fname ((db <db>) fname)
   (find-if #'(lambda (post) (get-by-fname post fname))
         (posts db)))
+
+(defun generate-unique-filename (db datetime base)
+  "Generate a filename that does not yet exist in the database
+   based on datetime (yyyy-mm-dd hh:mm:ss) and a base (any string).
+
+   Function will generate a a base name of the form <date>-<slug>.md
+   and in case such a filename already exist, will keep adding increasing
+   postfix numbers till it finds a vacant spot"
+  (labels ((gen-name (date slug counter)
+             (if (equal counter 1)
+                 (format nil "~a-~a.md" date slug)
+                 (format nil "~a-~a-~a.md" date slug counter))))
+
+    (let ((date (car (split datetime)))
+          (slug (slugify base))
+          (ht (to-hash-table db :key-sub #'filename)))
+
+      (with-output-to-string (out)
+        (loop with cnt = 0
+              for name = (gen-name date slug (incf cnt))
+              while (gethash name ht)
+              finally (format out "~a" name))))))
 
 (defun get-last-published-post (db)
   (car (sort (posts db) #'> :key #'created-at)))
@@ -348,6 +410,15 @@
 (defmethod to-list ((store <store>))
   `(:events ,(events store)
     :last-post-ts ,(last-post-ts store)))
+
+(defmethod to-hash-table ((store <store>) &key)
+  (let ((ht (make-hash-table :test 'equal)))
+    (dolist (item (events store) ht)
+      (let ((itemid (-<> item
+                         (getf <> :event)
+                         (getf <> :itemid)))
+            (ts (getf item :sync-ts)))
+        (setf (gethash itemid ht) ts)))))
 
 (defun merge-events (store new-events last-item-ts)
   (setf (events store)
