@@ -16,6 +16,7 @@
            :fetch-updated-posts
            :mark-as-pulled
            :merge-fetched-posts
+           :remerge-fetched-posts
            :lookup-file-url
            :edit-new-post
            :print-status
@@ -282,3 +283,21 @@
                        )
                      )))
     (save-posts)))
+
+
+(defun remerge-fetched-posts (&optional arg)
+  (let ((store (restore-source-posts (fetch-store *posts*)))
+        (ht (to-hash-table *posts*))
+        (target-itemid (when arg (parse-integer arg))))
+    (loop for event in (events store)
+          for itemid = (getf (getf event :event) :itemid)
+          for post = (gethash itemid ht)
+          when (synced-from-fetch post)
+            do
+               (let* ((parsed (parse-xml-response (getf event :event)))
+                      (text (post-file-list-to-string
+                                        (getf parsed :post-file))))
+
+                       ;; existing post
+                       (save-text-file (filename post)
+                                       text)))))

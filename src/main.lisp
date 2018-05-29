@@ -46,6 +46,13 @@ Commands:
 
         If id is supplied only this post is going to be merged.
 
+    remerge
+        Find posts that were already merged but not updated locally
+        afterwards and run merge again on them.
+
+        This functionality may be useful in case merge logic improves
+        and you want to get a better version of local posts.
+
     status
         Display the list with filenames of all drafts or files that
         are out of sync with blog service.
@@ -91,6 +98,10 @@ Commands:
         ((equal command "merge") (progn
                                    (restore-posts)
                                    (merge-fetched-posts arg)
+                                   ))
+        ((equal command "remerge") (progn
+                                   (restore-posts)
+                                   (remerge-fetched-posts)
                                    ))
         ((equal command "url") (if arg
                                    (progn
