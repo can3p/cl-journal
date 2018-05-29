@@ -268,6 +268,7 @@
                                                        :created-at (get-universal-time)
                                                        :updated-at (get-universal-time)
                                                        :ignored-at (get-universal-time)
+                                                       :synced-from-fetch t
                                                        :filename fname
                                                        )))))
                          (save-text-file fname text)

@@ -245,6 +245,10 @@
   (let ((*raw-text* (raw-text db)))
     (update-old-post post))
   (setf (updated-at post) (get-universal-time))
+  ;; we reset synced flag because once we updated
+  ;; post from current version of markdown we want
+  ;; to keep it untouched
+  (setf (synced-from-fetch post) nil)
 
   ;; technically this is not true, but this
   ;; timestamp can only be later then a honest
