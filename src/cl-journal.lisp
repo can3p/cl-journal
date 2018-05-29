@@ -280,7 +280,7 @@
                                                        :synced-from-fetch t
                                                        :filename fname
                                                        )))))
-                         (format t "Write new file ~s~%" fname)
+                         (format t "Writing new file ~s~%" fname)
                          (save-text-file fname text)
                          (push new-post (posts *posts*)))
                        )
