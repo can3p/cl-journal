@@ -1,3 +1,7 @@
+---
+layout: home
+---
+
 # Markdown based Livejournal.com / Dreamwidth.org client
 
 cl-journal is a file-based command line client for Livejournal.com blogging
