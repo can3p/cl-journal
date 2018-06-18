@@ -1,5 +1,5 @@
 ---
-layout: home
+layout: post
 ---
 
 # Markdown based Livejournal.com / Dreamwidth.org client
