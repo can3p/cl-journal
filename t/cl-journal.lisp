@@ -94,8 +94,8 @@
     (is (subseq result 0 2) (list items date))))
 
 (defmacro with-mocked-calls (func data &rest body)
-  "This function is necessary to emulate behaviour of
-   function that has side effects. Every subsequent
+  "This function is necessary to emulate the behavior of
+   a function that has side effects. Every subsequent
    call to the function will return next item from the
    data list, except the last one which will be returned
    endlessly"

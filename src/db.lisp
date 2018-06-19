@@ -294,7 +294,7 @@
   "Generate a filename that does not yet exist in the database
    based on datetime (yyyy-mm-dd hh:mm:ss) and a base (any string).
 
-   Function will generate a a base name of the form <date>-<slug>.md
+   Function will generate a base name of the form <date>-<slug>.md
    and in case such a filename already exist, will keep adding increasing
    postfix numbers till it finds a vacant spot"
   (labels ((gen-name (date slug counter)
