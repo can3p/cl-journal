@@ -230,7 +230,7 @@
 
 (defun mark-as-pulled ()
   (let ((ht (-<> *posts*
-                 (fetch-posts)
+                 (fetch-store)
                  (restore-source-posts)
                  (to-hash-table))))
     (loop for post in (posts *posts*) do

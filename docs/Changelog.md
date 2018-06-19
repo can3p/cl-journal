@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+* 2018-06-19 Fix mark-as-pulled command to work as expected instead of infinite post fetching
+
 ## 0.7.0
 
 * 2018-05-29 Remerge command to support free remerges for already merged posts
