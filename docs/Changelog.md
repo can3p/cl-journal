@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+## 0.7.1
+
 * 2018-06-19 Fix mark-as-pulled command to work as expected instead of infinite post fetching
 
 ## 0.7.0
