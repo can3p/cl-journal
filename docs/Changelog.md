@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+## 0.7.2
+
 * 2018-06-22 Use getchallenge api call to get server timestamp on post updates
 
 ## 0.7.1
