@@ -4,6 +4,8 @@ title: Changelog
 
 ## Not released yet
 
+* 2018-06-22 Use getchallenge api call to get server timestamp on post updates
+
 ## 0.7.1
 
 * 2018-06-19 Fix mark-as-pulled command to work as expected instead of infinite post fetching

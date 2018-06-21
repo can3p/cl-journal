@@ -2,6 +2,11 @@
 
 (defpackage cl-journal.functions
   (:use :cl :uiop/run-program)
+  (:import-from :local-time
+   :format-timestring
+   :unix-to-timestamp
+   :+utc-zone+
+   )
   (:export :get-date-struct
            :cwd-is-git-dir-p
            :cwd-has-posts-file-p
@@ -9,9 +14,32 @@
            :exec-interactive
            :prompt-read
            :prompt-read-password
+           :format-unix-timestamp
            :chdir))
 
 (in-package :cl-journal.functions)
+
+;; defconstant generated restarts
+;; and I ended up with special variable instead
+(defparameter *livejournal-timestamp-format* (list
+                                 :year
+                                 "-"
+                                 (list :month 2)
+                                 "-"
+                                 (list :day 2)
+                                 " "
+                                 (list :hour 2)
+                                 ":"
+                                 (list :min 2)
+                                 ":"
+                                 (list :sec 2)
+                                 ))
+
+(defun format-unix-timestamp (ts)
+  (format-timestring nil (unix-to-timestamp ts)
+                     :format *livejournal-timestamp-format*
+                      ;; looks like utc zone is what syncitems use
+                     :timezone +utc-zone+))
 
 (defun get-date-struct (&optional ts)
   (multiple-value-bind

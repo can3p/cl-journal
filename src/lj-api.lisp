@@ -8,7 +8,7 @@
 (in-package :cl-user)
 (defpackage cl-journal.lj-api
   (:use :cl :cl-arrows)
-  (:import-from :cl-journal.functions :get-date-struct)
+  (:import-from :cl-journal.functions :get-date-struct :format-unix-timestamp)
   (:import-from :alexandria :compose)
   (:import-from :cl-journal.settings
                 :get-password)
@@ -134,25 +134,11 @@
                         (declare (ignore f))
                         (handle-failure)))))
 
-(defun older-p (ts1 ts2 threshold)
-  (labels ((parse (ts)
-             (let
-                 ((local-time::*default-timezone* local-time::+utc-zone+))
-               (parse-timestring ts :date-time-separator #\Space))))
-    (timestamp>
-         (timestamp- (parse ts2) threshold :sec)
-         (parse ts1))))
-
-
 (defun lj-get-server-ts ()
-  ;; scary hack to get server ts in a single timezone
-  (labels ((r () (getf (lj-getevents '(1000000)) :lastsync))) ;; something big enough to have empty lookup
-    (loop with a = (r)
-          do
-             (let ((b (r)))
-               (format t "~a~%" b)
-               (when (older-p a b 10) (return a))
-               (when (older-p b a 10) (return b))))))
+  (->
+   (rpc-call "LJ.XMLRPC.getchallenge")
+   (getf :server_time)
+   (format-unix-timestamp)))
 
 (defun lj-syncitems (&optional (lastsync nil))
   (let* ((c (-<> (list :ver 1)
