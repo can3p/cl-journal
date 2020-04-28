@@ -82,6 +82,31 @@ privacy: friends
 Some body with *markdown* support, link to {lj-user livejournal}
 ~~~
 
+Posting to groups is also supported in a very rudimentary way. What you
+need to know about them is that this setting is sent to the api
+as a number where every bit set flags that post should be visible to
+a particular group. First bit is reserved for friends-only privacy mode,
+so your custom groups will occupy bits from second onwards. You  may
+set several bits if you want to make a post visible to several groups.
+A particular group number can be derived from a list on the post creation
+page, where first checkbox means second bit set, second checkbox - third
+bit and so one. To make calculations simpler, let's assign a number
+to every checkbox:
+
+- Checkbox one - 2
+- Checkbox two - 4
+- Checkbox three - 8
+- Checkbox four - 16
+- Checkbox five - 32
+
+To show this post to multiple groups you just need to sum their numbers up.
+I.e. to make a post visible for checkbox one and three the value will be 10.
+This is what you need to enter as privacy value:
+
+~~~
+privacy: 10
+~~~
+
 Privacy field is public by default. If specified can contain private, friends
 and public values.  The example has only title and privacy field but you can
 use also tags, music, location and mood fields.

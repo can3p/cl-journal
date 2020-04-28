@@ -4,6 +4,11 @@ title: Changelog
 
 ## Not released yet
 
+## 0.7.3
+
+* 2020-04-29 Treat unknown non nil value of privacy field as an allowmask parameter
+  to support groups
+
 ## 0.7.2
 
 * 2018-06-22 Use getchallenge api call to get server timestamp on post updates

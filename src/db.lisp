@@ -375,16 +375,19 @@
         plist)))
 
 (defun add-privacy-fields (plist privacy)
-  (let ((lj-privacy (cond
+  (let* ((lj-privacy (cond
                    ((string= privacy "public") "public")
                    ((string= privacy "friends") "usemask")
                    ((string= privacy "private") "private")
+                   ((not (null privacy)) "usemask")
                    (t "public")
-                   )))
-    (if (string= privacy "friends")
+                   ))
+         (allowmask (if (string= lj-privacy "usemask")
+                      (if (string= privacy "friends") 1 privacy))))
+    (if (string= lj-privacy "usemask")
         (concatenate 'list
                      plist
-                     (list :security lj-privacy :allowmask 1))
+                     (list :security lj-privacy :allowmask allowmask))
         (concatenate 'list
                      plist
                      (list :security lj-privacy)))))
