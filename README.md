@@ -1,5 +1,7 @@
 # Livejournal.com / Dreamwidth.org client written in common lisp
 
+## The project is not dead, it's feature complete :D
+
 The general idea is that I don't wont to write my posts in any web interface,
 vim is just fine for these purposes! Moreover, the best workflow would by
 similar to the one we get with the help of static site generators - git repo
@@ -34,6 +36,10 @@ and it should be in path for script to work correctly:
 
 `echo 'PATH="~/.roswell/bin:$PATH"' >> ~/.bashrc`
 
+**Note**: A couple of cl-journal deps are dead now and cannot be found in the quicklisp. Please
+help yourselves and clone `can3p/rpc4cl` and `can3p/rfc3339-timestamp` to `~/common-lisp`
+folder.
+
 Once roswell is installed, getting cl-journal is just a matter of
 
 `ros install can3p/cl-journal`
@@ -58,7 +64,7 @@ privacy: friends
 
 Some body with *markdown* support, link to {lj-user livejournal}
 ```
-    
+
 - Privacy field is public by default. If specified can contain private, friends and public vlues
 - Publish with `cl-journal push`
 
