@@ -42,6 +42,20 @@ folder.
 
 Once roswell is installed, getting cl-journal is just a matter of
 
+1. Install dead dependencies
+
+Some of the libraries were kicked out from quicklisp and/or also gone from the github,
+install them into `~/common-lisp` folder:
+
+```
+cd ~/common-lisp
+git clone git@github.com:can3p/cl-arrows.git  # just a fork of official repo just in case
+git clone git@github.com:can3p/rpc4cl.git                                                                                                           │
+git clone git@github.com:can3p/rfc3339-timestamp.git
+```
+
+After this step you should be able to install the script
+
 `ros install can3p/cl-journal`
 
 ## Install (Mac OS)
